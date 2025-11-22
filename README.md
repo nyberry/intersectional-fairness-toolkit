@@ -13,9 +13,9 @@ A Python package for evaluating fairness metrics in clinical prediction models.
 
 ## Development
 Branch strategy
-main: stable, deliverable code only
-dev: active development
-feature branches: small chunks of work
+- main: stable, deliverable code only
+- dev: active development
+- feature branches: small chunks of work
 
 ## Suggested workflow:\Workflow
 1. Create branch from dev
