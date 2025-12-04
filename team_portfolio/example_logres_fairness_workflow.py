@@ -26,17 +26,11 @@ Hope this gives a feeling for the overall workflow
 
 """
 
-import sys
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
 
-# Add project root to Python path
-project_root = Path(__file__).resolve().parents[1]
-sys.path.append(str(project_root))
 
 
 
@@ -55,11 +49,10 @@ y : pandas Series
     Binary label indicating presence (1) or absence (0) of heart disease.
 """
 
+df = pd.read_csv("../data/heart.csv")
 
-from toolkit.dataset import load_heart_disease
-
-
-X, y = load_heart_disease()
+X = df.drop(columns=["HeartDisease"])
+y = df["HeartDisease"]
 
 print("X shape:", X.shape)
 print("y shape:", y.shape)
