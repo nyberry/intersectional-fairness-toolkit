@@ -27,15 +27,15 @@
 
 * Proposals for:
 
-  * Module layout (e.g., `metrics/`, `preprocessing/`, `visualisation/`)
+  * Module layout
   * API design (simple functions vs. class-based)
-  * Example datasets and workflows
+  * Example dataset and workflow
   * How to make it intuitive for other health data scientists
 
 ### **2.3 Scoping the first version (v0.1)**
 
 * Minimum viable features
-* What is feasible by 9th January?
+* What is feasible by next week?
 * Stretch goals (optional)
 
 ### **2.4 Work Division**
