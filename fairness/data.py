@@ -1,0 +1,253 @@
+"""
+fairness.data
+=============
+
+Dataset-agnostic data loading utilities used by the fairness toolkit.
+
+This module is intentionally lightweight. Its job is to load tabular datasets
+into a pandas DataFrame (and optionally split out the target column), while
+preserving row order and/or indices so that downstream steps can guarantee
+alignment between:
+
+- model predictions (y_pred)
+- true labels (y_test)
+- protected attributes used to construct intersectional groups
+
+Dataset-specific logic (e.g., mapping target labels, binning ages, cleaning
+special missing-value encodings such as '?') should live in small adapter
+functions, ideally outside this module or in dedicated dataset adapters.
+
+Typical usage
+-------------
+>>> from fairness.data import load_csv, load_features_and_target
+>>> df = load_csv("data/heart.csv")
+>>> X, y = load_features_and_target(df, target_col="HeartDisease")
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Iterable, Mapping, Optional, Sequence, Tuple, Union
+
+import pandas as pd
+
+
+PathLike = Union[str, Path]
+
+
+@dataclass(frozen=True)
+class DatasetBundle:
+    """
+    Container holding the core objects required for modelling and fairness.
+
+    Attributes
+    ----------
+    df:
+        Original dataset as loaded from disk (or constructed by an adapter).
+    X:
+        Feature matrix (DataFrame) used for model training and prediction.
+    y:
+        Target vector (Series) used as labels.
+    protected_df:
+        DataFrame containing protected columns (same index as X and y).
+        This is used to construct intersectional group labels downstream.
+    """
+    df: pd.DataFrame
+    X: pd.DataFrame
+    y: pd.Series
+    protected_df: pd.DataFrame
+
+
+def load_csv(
+    path: PathLike,
+    *,
+    index_col: Optional[Union[int, str]] = None,
+    na_values: Optional[Union[str, Sequence[str]]] = None,
+) -> pd.DataFrame:
+    """
+    Load a CSV file into a pandas DataFrame.
+
+    Parameters
+    ----------
+    path:
+        Path to the CSV file.
+    index_col:
+        Column to use as the row index (passed to pandas.read_csv). If None,
+        pandas uses a default integer index.
+    na_values:
+        Additional strings to recognise as NA/NaN (passed to pandas.read_csv).
+        Useful for datasets such as UCI Adult which may use '?'.
+
+    Returns
+    -------
+    pd.DataFrame
+        The dataset as a DataFrame.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the file does not exist.
+    ValueError
+        If the loaded object is empty.
+    """
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"CSV not found: {path}")
+
+    df = pd.read_csv(path, index_col=index_col, na_values=na_values)
+    if df.empty:
+        raise ValueError(f"Loaded CSV is empty: {path}")
+
+    return df
+
+
+def validate_columns(df: pd.DataFrame, required: Iterable[str]) -> None:
+    """
+    Validate that required columns exist in the DataFrame.
+
+    Parameters
+    ----------
+    df:
+        Input DataFrame.
+    required:
+        Column names that must be present.
+
+    Raises
+    ------
+    ValueError
+        If any required column is missing.
+    """
+    required_set = set(required)
+    missing = required_set - set(df.columns)
+    if missing:
+        raise ValueError(f"Missing required columns: {sorted(missing)}")
+
+
+def load_features_and_target(
+    df: pd.DataFrame,
+    *,
+    target_col: str,
+    drop_cols: Sequence[str] = (),
+) -> Tuple[pd.DataFrame, pd.Series]:
+    """
+    Split a DataFrame into features X and target y.
+
+    This helper does not modify the input DataFrame.
+
+    Parameters
+    ----------
+    df:
+        Full dataset containing both features and target.
+    target_col:
+        Name of the target column.
+    drop_cols:
+        Additional columns to drop from X (e.g., derived protected attributes
+        used only for fairness analysis such as 'age_group').
+
+    Returns
+    -------
+    (X, y):
+        X is a DataFrame of features, y is a Series of labels.
+
+    Raises
+    ------
+    ValueError
+        If target_col is not in df, or if resulting X is empty.
+    """
+    validate_columns(df, [target_col])
+
+    y = df[target_col]
+    X = df.drop(columns=[target_col, *drop_cols], errors="raise")
+
+    if X.shape[1] == 0:
+        raise ValueError("No feature columns remain after dropping target/drop_cols")
+
+    return X, y
+
+
+def make_dataset_bundle(
+    df: pd.DataFrame,
+    *,
+    target_col: str,
+    protected_cols: Sequence[str],
+    drop_from_X: Sequence[str] = (),
+) -> DatasetBundle:
+    """
+    Create a DatasetBundle containing X, y, and protected_df with guaranteed alignment.
+
+    Use this when you want a single object that captures everything needed for the
+    modelling + fairness workflow, while keeping protected attributes separate.
+
+    Parameters
+    ----------
+    df:
+        Full dataset DataFrame.
+    target_col:
+        Name of the target column.
+    protected_cols:
+        Column names to treat as protected characteristics (e.g., ["Sex", "age_group"]).
+        These will be copied into protected_df.
+    drop_from_X:
+        Columns to exclude from the model features in addition to target_col.
+        This is typically used for derived protected attributes that should not be
+        used for training (e.g., "age_group"), while still being available for
+        fairness analysis.
+
+    Returns
+    -------
+    DatasetBundle
+        Bundle containing df, X, y, protected_df.
+
+    Raises
+    ------
+    ValueError
+        If required columns are missing or invalid.
+    """
+    validate_columns(df, [target_col, *protected_cols])
+
+    protected_df = df[list(protected_cols)].copy()
+    X, y = load_features_and_target(df, target_col=target_col, drop_cols=drop_from_X)
+
+    # Index alignment check (defensive, should always hold)
+    if not (X.index.equals(y.index) and X.index.equals(protected_df.index)):
+        raise ValueError("Index alignment error: X, y, and protected_df must share the same index")
+
+    return DatasetBundle(df=df, X=X, y=y, protected_df=protected_df)
+
+
+# -----------------------------
+# Optional: dataset adapters
+# -----------------------------
+
+def load_heart_csv(
+    path: PathLike,
+    *,
+    target_col: str = "HeartDisease",
+) -> pd.DataFrame:
+    """
+    Load the Heart Disease CSV used in the tutorial.
+
+    This is a thin wrapper around load_csv() for convenience in examples.
+    It intentionally does not perform preprocessing (e.g., one-hot encoding).
+
+    Parameters
+    ----------
+    path:
+        Path to heart.csv.
+    target_col:
+        Expected target column name (used for validation).
+
+    Returns
+    -------
+    pd.DataFrame
+        Loaded dataset.
+
+    Raises
+    ------
+    ValueError
+        If the expected target column is missing.
+    """
+    df = load_csv(path)
+    validate_columns(df, [target_col])
+    return df

@@ -22,3 +22,6 @@ dist/
 
 # macOS system files
 .DS_Store
+
+# nick's old files
+old_files/

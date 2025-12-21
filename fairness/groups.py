@@ -1,75 +1,240 @@
+"""
+fairness.groups
+===============
+
+Utilities for constructing protected groups and intersectional group labels.
+
+Fairness metrics such as Differential Fairness require a group label for each
+record, representing membership in a protected group (or intersection of groups).
+
+This module provides:
+- creation of human-readable intersectional group labels
+- group count summaries
+- optional small-group warnings to highlight unstable estimates
+
+Typical usage
+-------------
+>>> protected = ["Sex", "age_group"]
+>>> groups, group_map, counts = create_intersectional_groups(df.loc[X_test.index], protected)
+>>> counts
+Sex=1|age_group=young    127
+Sex=1|age_group=older    103
+Sex=0|age_group=older     26
+Sex=0|age_group=young     20
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Hashable, Mapping, Optional, Sequence, Tuple
+
 import pandas as pd
 
-def create_intersectional_groups(
-    df: pd.DataFrame, 
-    protected_attributes: list[str]
-):
-    """
-    Create intersectional group labels from one or more protected attributes.
 
-    This function combines the specified protected attribute columns into a 
-    single human-readable group label for each row (e.g. "sex=1|age_group=older").
-    These labels can then be used to analyse fairness across intersectional groups.
+@dataclass(frozen=True)
+class GroupingResult:
+    """
+    Result container for intersectional grouping.
+
+    Attributes
+    ----------
+    groups:
+        List of group labels aligned with the input DataFrame rows.
+    group_map:
+        Mapping from label -> {attribute: value} for interpretability.
+    counts:
+        Series of group sizes (index = label, value = count).
+    protected_cols:
+        The protected columns used to build the group labels.
+    """
+    groups: list[str]
+    group_map: dict[str, dict[str, Hashable]]
+    counts: pd.Series
+    protected_cols: tuple[str, ...]
+
+
+def validate_protected_columns(df: pd.DataFrame, protected: Sequence[str]) -> None:
+    """
+    Validate that the requested protected columns exist in the DataFrame.
 
     Parameters
     ----------
-    df : pandas.DataFrame
-        The input dataset. Must contain all columns listed in protected_attributes.
-
-    protected_attributes : list of str
-        The column names representing protected characteristics, such as 
-        ["sex", "age_group"]. These columns should exist in the dataframe.
-
-    Returns
-    -------
-    group_labels : pandas.Series
-        A Series (length = len(df)) where each entry is a string label 
-        identifying the intersectional group for that row.
-
-    group_map : dict
-        A dictionary mapping each unique group label to a list of row indices 
-        belonging to that group. Example:
-            {
-                "sex=1|age_group=older": [3, 7, 12, ...],
-                "sex=0|age_group=young": [0, 4, 9, ...]
-            }
-
-    counts : pandas.Series
-        The number of samples (rows) in each intersectional group.
+    df:
+        Input DataFrame.
+    protected:
+        List of protected column names.
 
     Raises
     ------
     ValueError
-        If protected_attributes is empty.
-
-    KeyError
-        If any of the specified protected attributes do not exist in df.
+        If protected is empty or columns are missing.
     """
+    if not protected:
+        raise ValueError("protected must be a non-empty list of column names")
 
-    # ---- Validation ----
-    if not protected_attributes:
-        raise ValueError("protected_attributes list cannot be empty.")
+    missing = [c for c in protected if c not in df.columns]
+    if missing:
+        raise ValueError(f"Protected columns not found: {missing}")
 
-    missing_cols = [col for col in protected_attributes if col not in df.columns]
-    if missing_cols:
-        raise KeyError(
-            f"The following protected attributes are missing from the dataframe: {missing_cols}"
-        )
 
-    # ---- Create human-readable intersectional group labels ----
-    # Example output: "sex=1|age_group=older"
-    group_labels = df[protected_attributes].apply(
-        lambda row: "|".join([f"{col}={row[col]}" for col in protected_attributes]),
-        axis=1
-    )
+def _normalise_value(val: object, *, missing: str = "NA") -> Hashable:
+    """
+    Normalise values used in group labels.
 
-    # ---- Create group → row index mapping ----
-    group_map = {
-        group: df.index[group_labels == group].tolist()
-        for group in group_labels.unique()
-    }
+    - Converts NaN/None to a sentinel string (default: 'NA')
+    - Leaves other values unchanged
 
-    # ---- Count how many individuals are in each group ----
-    counts = group_labels.value_counts()
+    Parameters
+    ----------
+    val:
+        Input value from the DataFrame.
+    missing:
+        Replacement used when val is missing.
 
-    return group_labels, group_map, counts
+    Returns
+    -------
+    Hashable
+        Normalised value suitable for label creation.
+    """
+    if pd.isna(val):
+        return missing
+    return val  # type: ignore[return-value]
+
+
+def create_group_label(
+    row: pd.Series,
+    protected: Sequence[str],
+    *,
+    sep: str = "|",
+    kv_sep: str = "=",
+    missing: str = "NA",
+) -> str:
+    """
+    Create a single intersectional group label for a row.
+
+    Example:
+        Sex=1|age_group=older
+
+    Parameters
+    ----------
+    row:
+        A Series containing at least the protected columns.
+    protected:
+        Ordered list of protected column names.
+    sep:
+        Separator between attributes.
+    kv_sep:
+        Separator between key and value.
+    missing:
+        Placeholder used for missing values.
+
+    Returns
+    -------
+    str
+        Intersectional group label.
+    """
+    parts: list[str] = []
+    for col in protected:
+        val = _normalise_value(row[col], missing=missing)
+        parts.append(f"{col}{kv_sep}{val}")
+    return sep.join(parts)
+
+
+def create_intersectional_groups(
+    df: pd.DataFrame,
+    protected: Sequence[str],
+    *,
+    sep: str = "|",
+    kv_sep: str = "=",
+    missing: str = "NA",
+    sort_counts: bool = True,
+) -> Tuple[list[str], dict[str, dict[str, Hashable]], pd.Series]:
+    """
+    Create intersectional group labels from protected attributes.
+
+    Parameters
+    ----------
+    df:
+        DataFrame containing protected columns.
+    protected:
+        Column names to intersect (e.g., ["Sex", "age_group"]).
+    sep:
+        Separator between attributes in labels.
+    kv_sep:
+        Separator between key and value in labels.
+    missing:
+        Placeholder for missing values.
+    sort_counts:
+        If True, counts are returned sorted descending.
+
+    Returns
+    -------
+    groups:
+        List of group labels aligned with df rows.
+    group_map:
+        Mapping label -> {attribute: value} for interpretability.
+    counts:
+        Group sizes as a pandas Series.
+
+    Notes
+    -----
+    Alignment is preserved: `groups[i]` corresponds to the i-th row of df.
+    When used with `df.loc[X_test.index]`, this guarantees alignment with y_pred.
+    """
+    validate_protected_columns(df, protected)
+
+    protected = tuple(protected)
+    groups: list[str] = []
+    group_map: dict[str, dict[str, Hashable]] = {}
+
+    # Build labels row-wise to preserve ordering/alignment
+    for _, row in df[list(protected)].iterrows():
+        label = create_group_label(row, protected, sep=sep, kv_sep=kv_sep, missing=missing)
+        groups.append(label)
+
+        if label not in group_map:
+            mapping = {col: _normalise_value(row[col], missing=missing) for col in protected}
+            group_map[label] = mapping
+
+    counts = pd.Series(groups, name="group").value_counts()
+    if not sort_counts:
+        # Preserve first-seen order rather than frequency order
+        counts = counts.reindex(pd.Index(dict.fromkeys(groups).keys()))
+
+    return groups, group_map, counts
+
+
+def warn_small_groups(
+    counts: pd.Series,
+    *,
+    min_size: int = 20,
+) -> Optional[str]:
+    """
+    Generate a warning message if any intersectional group has fewer than min_size samples.
+
+    Parameters
+    ----------
+    counts:
+        Group size Series (as returned by create_intersectional_groups()).
+    min_size:
+        Minimum recommended sample size per group.
+
+    Returns
+    -------
+    Optional[str]
+        Warning message string if small groups exist, otherwise None.
+
+    Notes
+    -----
+    Small groups can produce unstable fairness estimates (including DF epsilon),
+    even with smoothing. Users may wish to:
+    - reduce the number of protected attributes
+    - merge rare categories
+    - use stronger smoothing
+    """
+    small = counts[counts < min_size]
+    if small.empty:
+        return None
+
+    items = ", ".join([f"{idx} (n={int(n)})" for idx, n in small.items()])
+    return f"Small intersectional groups detected (<{min_size}): {items}"
