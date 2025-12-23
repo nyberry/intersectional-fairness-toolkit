@@ -15,13 +15,6 @@ It is designed to be dataset-agnostic, meaning it can work with different datase
 
 `groups.py` creates intersectional group labels from protected attributes
 
-Together, these modules prepare one of the inputs required by fairness metrics:
-
-(test individual i)
- └─ groups[i] → protected group label
-
-Model predictions (`y_pred`) and truths (`y_true`) are also required by fairness metrics. These are generated elsewhere by any classification model, and are not produced by this part of the pipeline.
-
 ## Loading a dataset
 
 
@@ -32,7 +25,7 @@ df = load_csv("fairness/data/heart.csv")
 
 Dataset-specific loaders are added as wrappers around this function as needed.
 
-                                    ## Preprocessing
+## Preprocessing
 
 Preprocessing prepares a raw dataset for both model training and fairness analysis.
 
@@ -131,9 +124,9 @@ The order of this list matches the order of the test-set rows used to generate m
 this means that for each test-set individual i:
 
 ```
-groups[i]  → the protected group of individual i
-y_pred[i]  → the model’s prediction for individual i
-y_test[i]  → the true outcome for individual i
+groups[i], the protected group of individual i
+y_pred[i], the model’s prediction for individual i
+y_test[i], the true outcome for individual i
 ```
 
 `group_map`
