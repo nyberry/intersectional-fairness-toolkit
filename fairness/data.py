@@ -2,12 +2,11 @@
 fairness.data
 =============
 
-Dataset-agnostic data loading utilities used by the fairness toolkit.
+Data loading utilities used by the fairness toolkit.
 
-This module is intentionally lightweight. Its job is to load tabular datasets
-into a pandas DataFrame (and optionally split out the target column), while
-preserving row order and/or indices so that downstream steps can guarantee
-alignment between:
+This module loads tabular datasets into a pandas
+DataFrame, while preserving row order and/or indices
+so that downstream steps can guarantee alignment between:
 
 - model predictions (y_pred)
 - true labels (y_test)
@@ -15,7 +14,7 @@ alignment between:
 
 Dataset-specific logic (e.g., mapping target labels, binning ages, cleaning
 special missing-value encodings such as '?') should live in small adapter
-functions, ideally outside this module or in dedicated dataset adapters.
+functions.
 
 Typical usage
 -------------
@@ -32,7 +31,6 @@ from typing import Iterable, Mapping, Optional, Sequence, Tuple, Union
 
 import pandas as pd
 
-
 PathLike = Union[str, Path]
 
 
@@ -43,12 +41,9 @@ class DatasetBundle:
 
     Attributes
     ----------
-    df:
-        Original dataset as loaded from disk (or constructed by an adapter).
-    X:
-        Feature matrix (DataFrame) used for model training and prediction.
-    y:
-        Target vector (Series) used as labels.
+    df: Original dataset as loaded
+    X: Feature matrix (DataFrame) used for model training and prediction.
+    y: Target vector (Series) used as labels.
     protected_df:
         DataFrame containing protected columns (same index as X and y).
         This is used to construct intersectional group labels downstream.
@@ -76,8 +71,7 @@ def load_csv(
         Column to use as the row index (passed to pandas.read_csv). If None,
         pandas uses a default integer index.
     na_values:
-        Additional strings to recognise as NA/NaN (passed to pandas.read_csv).
-        Useful for datasets such as UCI Adult which may use '?'.
+        Additional strings to recognise as NA/NaN
 
     Returns
     -------
@@ -132,8 +126,6 @@ def load_features_and_target(
 ) -> Tuple[pd.DataFrame, pd.Series]:
     """
     Split a DataFrame into features X and target y.
-
-    This helper does not modify the input DataFrame.
 
     Parameters
     ----------
@@ -217,7 +209,7 @@ def make_dataset_bundle(
 
 
 # -----------------------------
-# Optional: dataset adapters
+# Dataset adapters
 # -----------------------------
 
 def load_heart_csv(
@@ -228,8 +220,7 @@ def load_heart_csv(
     """
     Load the Heart Disease CSV used in the tutorial.
 
-    This is a thin wrapper around load_csv() for convenience in examples.
-    It intentionally does not perform preprocessing (e.g., one-hot encoding).
+    This is a wrapper around load_csv() 
 
     Parameters
     ----------

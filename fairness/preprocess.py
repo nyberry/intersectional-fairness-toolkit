@@ -4,8 +4,8 @@ fairness.preprocess
 
 Preprocessing utilities for tabular datasets used in fairness analysis.
 
-This module focuses on:
-- lightweight feature engineering (e.g., binning age into age_group)
+This module includes:
+- feature engineering (e.g., binning age into age_group)
 - converting raw tabular data into numeric features suitable for ML
 - producing reproducible train/test splits while preserving indices
 
@@ -14,8 +14,7 @@ Design notes
 - The toolkit is model-agnostic: these functions do not require sklearn pipelines,
   but they produce outputs compatible with sklearn and similar libraries.
 - Protected attributes may be used for fairness analysis even if they are excluded
-  from model training. Derived protected attributes (e.g. age_group) are commonly
-  excluded from model inputs.
+  from model training. Derived protected attributes (e.g. age_group) are excluded from model inputs.
 
 Typical usage
 -------------
@@ -159,9 +158,6 @@ def apply_transforms(
     """
     Apply a sequence of DataFrame -> DataFrame transforms in order.
 
-    This is a simple hook for dataset-specific preparation without baking
-    dataset logic into the core pipeline.
-
     Parameters
     ----------
     df:
@@ -192,9 +188,9 @@ def preprocess_tabular(
     drop_first: bool = True,
 ) -> pd.DataFrame:
     """
-    Convert a mixed-type tabular DataFrame into numeric ML-ready features.
+    Convert a tabular DataFrame into numeric ML-ready features.
 
-    By default this performs one-hot encoding for categorical columns (object/category)
+    Performs one-hot encoding for categorical columns (object/category)
     and leaves numeric columns unchanged.
 
     Parameters
@@ -202,23 +198,18 @@ def preprocess_tabular(
     df:
         Input dataset.
     drop_cols:
-        Columns to drop prior to encoding (useful to remove targets or unused columns).
+        Columns to drop prior to encoding 
     one_hot:
         Whether to one-hot encode categorical columns.
     drop_first:
         If one_hot=True, drop the first level for each categorical variable to avoid
-        perfect multicollinearity in linear models.
+        perfect multicollinearity in logistic regression models.
 
     Returns
     -------
     pd.DataFrame
         A numeric DataFrame compatible with scikit-learn.
 
-    Notes
-    -----
-    This function does not scale numeric columns. If you need scaling to avoid
-    convergence warnings for LogisticRegression, prefer using an sklearn Pipeline
-    with StandardScaler for numeric features.
     """
     out = df.copy()
     if drop_cols:

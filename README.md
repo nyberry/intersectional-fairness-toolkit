@@ -9,11 +9,15 @@ It is designed to be dataset-agnostic, meaning it can work with different datase
 
 ## Overview of module
 
+
 `data.py` handles dataset loading.
 
 `preprocess.py` handles preprocessing, and train / test splitting.
 
 `groups.py` creates intersectional group labels from protected attributes
+
+Together, these functions take the raw dataset, process it, and supply the protected-group inputs needed for fairness metrics functions.
+
 
 ## Loading a dataset
 
@@ -49,7 +53,7 @@ This creates a categorical variable (young, old) suitable for intersectional gro
 In summary, this preprocessing step takes as input a pandas DataFrame containing a continuous age column (eg. `age`), and bins the age values into a smaller number of categories. It outputs a new dataframe that retains all original columns, and adds a new categorical colunm (eg. `age_group`)
 
 
-### 2. model-oriented preprocessing
+### 2. Model-oriented preprocessing
 
 Here the data is prepared for machine learning.
 
@@ -63,7 +67,7 @@ The output of this step, `df_model`, is a pandas DataFrame containing only numer
 This DataFrame is compatible with scikit-learn, which expects a 2-dimensional array-like input of shape (n_samples, n_features).
 
 
-### 3. data partitioning (train / test split)
+### 3. Data partitioning (train / test split)
 
 The pre-processed dataset is split into seperate training and test sets. This ensures that the model is trained on one subset of the data and evaluated on a different, unseen subset.
 
@@ -109,7 +113,7 @@ groups, group_map, counts = create_intersectional_groups(
 
 The DataFrame is indexed using split.X_test.index to ensure that only individuals in the test set are considered, and that the group labels are aligned with the model’s predictions.
 
-For each test-set individual, a human-readable label is constructed by combining the specified protected attributes.
+For each test-set individual, a label is constructed by combining the specified protected attributes.
 
 eg. `Sex=1|age_group=older`
 
@@ -117,11 +121,10 @@ The function also counts how many individuals belong to each intersectional grou
 
 The outputs of this function are:
 
-`groups`
-A list of intersectional group labels, with one label per individual in the test set.
+`groups`, a list of intersectional group labels, with one label per individual in the test set.
 The order of this list matches the order of the test-set rows used to generate model predictions.
 
-this means that for each test-set individual i:
+This means that for each test-set individual i:
 
 ```
 groups[i], the protected group of individual i
@@ -129,8 +132,6 @@ y_pred[i], the model’s prediction for individual i
 y_test[i], the true outcome for individual i
 ```
 
-`group_map`
-A mapping from each group label to the underlying protected attribute values.
+`group_map`, a mapping from each group label to the underlying protected attribute values.
 
-`counts`
-A summary of how many individuals in the test set belong to each intersectional group.
+`counts`, a summary of how many individuals in the test set belong to each intersectional group.

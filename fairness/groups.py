@@ -4,13 +4,7 @@ fairness.groups
 
 Utilities for constructing protected groups and intersectional group labels.
 
-Fairness metrics such as Differential Fairness require a group label for each
-record, representing membership in a protected group (or intersection of groups).
-
-This module provides:
-- creation of human-readable intersectional group labels
-- group count summaries
-- optional small-group warnings to highlight unstable estimates
+This module creates intersectional group labels, group count summaries, and small-group warnings.
 
 Typical usage
 -------------
