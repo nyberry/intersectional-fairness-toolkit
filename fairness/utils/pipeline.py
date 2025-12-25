@@ -5,8 +5,7 @@ fairness.pipeline
 A convenience "one-stop" workflow for demos and internal testing.
 
 This module is intentionally **not** part of the core fairness-metric API.
-It exists to help collaborators quickly:
-
+It exists to help quickly:
 1) load a dataset
 2) apply optional fairness-oriented transforms (e.g., add_age_group)
 3) preprocess to model-ready numeric features (one-hot encoding)
@@ -123,14 +122,18 @@ def run_demo_pipeline(
     if fairness_transforms:
         df_fair = apply_transforms(df_fair, fairness_transforms)
 
+    missing = [c for c in protected_cols if c not in df_fair.columns]
+    if missing:
+        raise ValueError(f"Protected columns missing after transforms: {missing}")
+
+
     # 2) model-oriented preprocessing (one-hot etc.)
-    df_model = preprocess_tabular(df_fair)
+    df_model = preprocess_tabular(df_fair, drop_cols=drop_from_X)
 
     # 3) split for modelling
     split = make_train_test_split(
         df_model,
         target_col=target_col,
-        drop_cols=drop_from_X,
         test_size=test_size,
         random_state=random_state,
         stratify=stratify,
@@ -138,8 +141,14 @@ def run_demo_pipeline(
 
     # 4) fit model and predict
     if model is None:
+        from sklearn.pipeline import Pipeline
+        from sklearn.preprocessing import StandardScaler
         from sklearn.linear_model import LogisticRegression
-        model = LogisticRegression(max_iter=1000)
+
+        model = Pipeline([
+            ("scaler", StandardScaler()),
+            ("clf", LogisticRegression(max_iter=2000))
+        ])
 
     fit_kwargs = model_fit_kwargs or {}
     model.fit(split.X_train, split.y_train, **fit_kwargs)
