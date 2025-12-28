@@ -36,7 +36,7 @@ In this package, intersectional groups are evaluated using differential fairness
 Clone the repository and install the package in editable mode:
 
 ```bash
-git clone https://github.com/Raiet-Bekirov/HPDM139_assignment
+git clone https://github.com/Raiet-Bekirov/HPDM139_assignment.git
 cd HPDM139_assignment
 pip install -e .
 ```
