@@ -45,24 +45,45 @@ pip install -e .
 ## Example usage
 
 ```python
-from fairness.data import load_csv
+from fairness.data import load_heart_csv
 from fairness.preprocess import add_age_group, preprocess_tabular, make_train_test_split
-from fairness.groups import create_intersectional_groups
-from fairness.metrics.differential import differential_fairness
+from fairness.groups import make_eval_df
+from fairness.metrics.metrics import group_accuracy 
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
 
-df = load_csv("data/heart.csv")
+# 1) Load + fairness-oriented preprocessing
+df = load_heart_csv("data/heart.csv")
 df = add_age_group(df)
 
+# 2) Preprocessing for ML
 df_model = preprocess_tabular(df)
-split = make_train_test_split(df_model, target_col="HeartDisease")
 
-groups, _, _ = create_intersectional_groups(
-    df.loc[split.X_test.index],
-    protected=["Sex", "age_group"]
+# 3) Train/test split
+split = make_train_test_split(df_model, target_col="HeartDisease", stratify=True)
+
+# 4) Train a simple model (example only; toolkit is model-agnostic)
+model = Pipeline([
+    ("scaler", StandardScaler()),
+    ("clf", LogisticRegression(max_iter=2000))
+])
+model.fit(split.X_train, split.y_train)
+y_pred = model.predict(split.X_test)
+
+# 5) Build aligned evaluation DataFrame for fairness metrics
+df_test = df.loc[split.X_test.index] 
+eval_df = make_eval_df(
+    df_test=df_test,
+    protected=["Sex", "age_group"],
+    y_pred=y_pred,
+    y_true=split.y_test.to_numpy(),
 )
 
-epsilon, _ = differential_fairness(split.y_test, groups)
-print(epsilon)
+# 6) Example group metric: accuracy for older females
+older_female = "Sex=0|age_group=older"
+acc = group_accuracy(older_female, eval_df)
+print("Accuracy (older female):", round(acc, 3))
 ```
 
 A complete end-to-end example using the UCI Heart Disease dataset is provided at [`examples/uci_heart_demo.ipynb`](examples/uci_heart_demo.ipynb)
