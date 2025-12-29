@@ -58,6 +58,8 @@ def group_acc_ratio(group_a_label, group_b_label, subject_labels,
 
     if np.isnan(group_a_accuracy) or np.isnan(group_b_accuracy):
         ratio = np.nan
+    elif group_a_accuracy == 0 or group_b_accuracy == 0:
+        ratio = np.nan
     else:
         ratio_a_b = group_a_accuracy / group_b_accuracy
         ratio_b_a = group_b_accuracy / group_a_accuracy
@@ -153,6 +155,8 @@ def max_intersect_acc_ratio(subject_labels_dict, predictions, true_statuses,
 
     if any(np.isnan(accuracy_values)):
         max_ratio = np.nan
+    elif np.any(accuracy_values == 0):
+        max_ratio = np.nan
     else:
         max_ratio = max(accuracy_values) / min(accuracy_values)
 
@@ -218,6 +222,8 @@ def group_fnr_ratio(group_a_label, group_b_label, subject_labels,
                             true_statuses=true_statuses)
 
     if np.isnan(group_a_fnr) or np.isnan(group_a_fnr):
+        ratio = np.nan
+    elif group_a_fnr == 0 or group_b_fnr == 0:
         ratio = np.nan
     else:
         ratio_a_b = group_a_fnr / group_b_fnr
@@ -314,6 +320,8 @@ def max_intersect_fnr_ratio(subject_labels_dict, predictions, true_statuses,
 
     if any(np.isnan(fnr_values)):
         max_ratio = np.nan
+    elif np.any(fnr_values == 0):
+        max_ratio = np.nan
     else:
         max_ratio = max(fnr_values) / min(fnr_values)
 
@@ -379,6 +387,8 @@ def group_fpr_ratio(group_a_label, group_b_label, subject_labels,
                             true_statuses=true_statuses)
 
     if np.isnan(group_a_fpr) or np.isnan(group_a_fpr):
+        ratio = np.nan
+    elif group_a_fpr == 0 or group_b_fpr == 0:
         ratio = np.nan
     else:
         ratio_a_b = group_a_fpr / group_b_fpr
@@ -475,6 +485,8 @@ def max_intersect_fpr_ratio(subject_labels_dict, predictions, true_statuses,
 
     if any(np.isnan(fpr_values)):
         max_ratio = np.nan
+    elif np.any(fpr_values == 0):
+        max_ratio = np.nan
     else:
         max_ratio = max(fpr_values) / min(fpr_values)
 
@@ -539,6 +551,8 @@ def group_for_ratio(group_a_label, group_b_label, subject_labels,
                             true_statuses=true_statuses)
 
     if np.isnan(group_a_for) or np.isnan(group_b_for):
+        ratio = np.nan
+    elif group_a_for == 0 or group_b_for == 0:
         ratio = np.nan
     else:
         ratio_a_b = group_a_for / group_b_for
@@ -634,6 +648,8 @@ def max_intersect_for_ratio(subject_labels_dict, predictions, true_statuses,
 
     if any(np.isnan(for_values)):
         max_ratio = np.nan
+    elif np.any(for_values == 0):
+        max_ratio = np.nan
     else:
         max_ratio = max(for_values) / min(for_values)
 
@@ -698,6 +714,8 @@ def group_fdr_ratio(group_a_label, group_b_label, subject_labels,
                             true_statuses=true_statuses)
 
     if np.isnan(group_a_fdr) or np.isnan(group_b_fdr):
+        ratio = np.nan
+    elif group_a_fdr == 0 or group_b_fdr == 0:
         ratio = np.nan
     else:
         ratio_a_b = group_a_fdr / group_b_fdr
@@ -792,6 +810,8 @@ def max_intersect_fdr_ratio(subject_labels_dict, predictions, true_statuses,
     fdr_values = np.array(list(fdrs.values()))
 
     if any(np.isnan(fdr_values)):
+        max_ratio = np.nan
+    elif np.any(fdr_values == 0):
         max_ratio = np.nan
     else:
         max_ratio = max(fdr_values) / min(fdr_values)
