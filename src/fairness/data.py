@@ -25,33 +25,12 @@ Typical usage
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Mapping, Optional, Sequence, Tuple, Union
+from typing import Iterable, Optional, Sequence, Tuple, Union
 
 import pandas as pd
 
 PathLike = Union[str, Path]
-
-
-@dataclass(frozen=True)
-class DatasetBundle:
-    """
-    Container holding the core objects required for modelling and fairness.
-
-    Attributes
-    ----------
-    df: Original dataset as loaded
-    X: Feature matrix (DataFrame) used for model training and prediction.
-    y: Target vector (Series) used as labels.
-    protected_df:
-        DataFrame containing protected columns (same index as X and y).
-        This is used to construct intersectional group labels downstream.
-    """
-    df: pd.DataFrame
-    X: pd.DataFrame
-    y: pd.Series
-    protected_df: pd.DataFrame
 
 
 def load_csv(
@@ -156,56 +135,6 @@ def load_features_and_target(
         raise ValueError("No feature columns remain after dropping target/drop_cols")
 
     return X, y
-
-
-def make_dataset_bundle(
-    df: pd.DataFrame,
-    *,
-    target_col: str,
-    protected_cols: Sequence[str],
-    drop_from_X: Sequence[str] = (),
-) -> DatasetBundle:
-    """
-    Create a DatasetBundle containing X, y, and protected_df with guaranteed alignment.
-
-    Use this when you want a single object that captures everything needed for the
-    modelling + fairness workflow, while keeping protected attributes separate.
-
-    Parameters
-    ----------
-    df:
-        Full dataset DataFrame.
-    target_col:
-        Name of the target column.
-    protected_cols:
-        Column names to treat as protected characteristics (e.g., ["Sex", "age_group"]).
-        These will be copied into protected_df.
-    drop_from_X:
-        Columns to exclude from the model features in addition to target_col.
-        This is typically used for derived protected attributes that should not be
-        used for training (e.g., "age_group"), while still being available for
-        fairness analysis.
-
-    Returns
-    -------
-    DatasetBundle
-        Bundle containing df, X, y, protected_df.
-
-    Raises
-    ------
-    ValueError
-        If required columns are missing or invalid.
-    """
-    validate_columns(df, [target_col, *protected_cols])
-
-    protected_df = df[list(protected_cols)].copy()
-    X, y = load_features_and_target(df, target_col=target_col, drop_cols=drop_from_X)
-
-    # Index alignment check (defensive, should always hold)
-    if not (X.index.equals(y.index) and X.index.equals(protected_df.index)):
-        raise ValueError("Index alignment error: X, y, and protected_df must share the same index")
-
-    return DatasetBundle(df=df, X=X, y=y, protected_df=protected_df)
 
 
 # -----------------------------
