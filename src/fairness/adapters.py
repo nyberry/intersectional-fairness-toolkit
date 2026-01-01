@@ -1,4 +1,3 @@
-import numpy as np  # TODO redandant import?
 
 
 def unpack_eval_df(eval_df):
