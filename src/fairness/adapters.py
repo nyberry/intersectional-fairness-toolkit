@@ -1,4 +1,4 @@
-import numpy as np   #TODO redandant import?
+
 
 def unpack_eval_df(eval_df):
     """
@@ -22,7 +22,6 @@ def unpack_eval_df(eval_df):
     true_statuses = [int(x) for x in eval_df["y_true"].to_list()]
 
     return subject_labels, predictions, true_statuses
-
 
 
 def make_subject_labels_dict(df_test, protected_cols):

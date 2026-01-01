@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, Optional, Sequence, Tuple, Union, Dict
+from typing import Iterable, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd

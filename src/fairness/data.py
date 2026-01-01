@@ -141,6 +141,7 @@ def load_features_and_target(
 # Dataset adapters
 # -----------------------------
 
+
 def load_heart_csv(
     path: PathLike,
     *,
@@ -149,7 +150,7 @@ def load_heart_csv(
     """
     Load the Heart Disease CSV used in the tutorial.
 
-    This is a wrapper around load_csv() 
+    This is a wrapper around load_csv()
 
     Parameters
     ----------

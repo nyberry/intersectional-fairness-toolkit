@@ -1,0 +1,29 @@
+site_name: Intersectional Fairness Toolkit
+theme:
+  name: material
+
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            show_source: false
+
+nav:
+  - Home: index.md
+  - Tutorial: tutorial.md
+  - API reference: api_reference.md
+  - Design decisions: design_decisions.md
+  - Team Portfolio:
+      - Contents: team_portfolio/contents.md
+      - Meeting 1 agenda: team_portfolio/meeting_1_agenda.md
+      - Meeting 1 minutes: team_portfolio/meeting_1_minutes.md
+      - Meeting 2 agenda: team_portfolio/meeting_2_agenda.md
+      - Meeting 2 minutes: team_portfolio/meeting_2_minutes.md
+      - Meeting 3 agenda: team_portfolio/meeting_3_agenda.md
+      - Meeting 3 minutes: team_portfolio/meeting_3_minutes.md
+      - Meeting 4 agenda: team_portfolio/meeting_4_agenda.md
+      - Meeting 4 minutes: team_portfolio/meeting_4_minutes.md
+      - Meeting 5 agenda: team_portfolio/meeting_5_agenda.md
+      - Meeting 5 minutes: team_portfolio/meeting_5_minutes.md

@@ -47,6 +47,7 @@ class SplitData:
     y_train, y_test:
         Target vectors for training and testing.
     """
+
     X_train: pd.DataFrame
     X_test: pd.DataFrame
     y_train: pd.Series
@@ -56,6 +57,7 @@ class SplitData:
 # ---------------------------------------------------------------------
 # Feature engineering helpers
 # ---------------------------------------------------------------------
+
 
 def add_age_group(
     df: pd.DataFrame,
@@ -178,6 +180,7 @@ def apply_transforms(
 # Core preprocessing for ML
 # ---------------------------------------------------------------------
 
+
 def preprocess_tabular(
     df: pd.DataFrame,
     *,
@@ -196,7 +199,7 @@ def preprocess_tabular(
     df:
         Input dataset.
     drop_cols:
-        Columns to drop prior to encoding 
+        Columns to drop prior to encoding
     one_hot:
         Whether to one-hot encode categorical columns.
     drop_first:
@@ -222,6 +225,7 @@ def preprocess_tabular(
 # ---------------------------------------------------------------------
 # Train/test split helpers
 # ---------------------------------------------------------------------
+
 
 def make_train_test_split(
     df: pd.DataFrame,
