@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "intersectional-fairness-toolkit"
-version = "0.1.0"
+version = "0.1.1"
 description = "Utilities for intersectional fairness analysis of tabular health datasets."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -31,3 +31,8 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+
+[project.urls]
+Homepage = "https://raiet-bekirov.github.io/HPDM139_assignment/"
+Repository = "https://github.com/raiet-bekirov/HPDM139_assignment"
