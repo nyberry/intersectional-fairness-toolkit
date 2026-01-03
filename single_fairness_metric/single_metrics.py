@@ -4,44 +4,68 @@ import numpy as np
 import itertools
 
 
-def calculate_TP_FN_FP_TN(y_test,y_pred):
+def group_to_binary(labels, privileged_label):
+    """
+    Adapts single fairness functions to the intersectional
+    ones
+    labels: list of group labels (e.g. 'Male', 'Female')
+    privileged_label: label considered privileged
+    returns: numpy array (1 = privileged, 0 = unprivileged)
+    """
+    labels = np.array(labels)
+    
+    if privileged_label not in labels:
+        raise ValueError(
+            f"Privileged label '{privileged_label}' not found in group labels. "
+            f"Available labels: {np.unique(labels)}"
+        )
+
+    return (labels == privileged_label).astype(int)
+
+def calculate_TP_FN_FP_TN(y_test, y_pred):
     """
     Computes the confusion matrix components: True Positives (TP),
     False Negatives (FN), True Negatives (TN), and False Positives (FP).
 
-    This function compares the true binary labels with the predicted
-    binary labels and counts how many predictions fall into each
-    confusion matrix category.
-
-    Parameters
-    ----------
-    y_test : array-like of shape (n_samples,)
-        Ground-truth binary labels.
-        Expected values: 0 (negative class) or 1 (positive class).
-
-    y_pred : array-like of shape (n_samples,)
-        Predicted binary labels produced by a classifier.
-        Expected values: 0 (negative class) or 1 (positive class).
-
-    Returns
-    -------
-    tp : int
-        Number of true positives (y_test = 1 and y_pred = 1).
-
-    fn : int
-        Number of false negatives (y_test = 1 and y_pred = 0).
-
-    tn : int
-        Number of true negatives (y_test = 0 and y_pred = 0).
-
-    fp : int
-        Number of false positives (y_test = 0 and y_pred = 1).
-
     Notes
     -----
-    - This function assumes binary classification with labels {0, 1}.
-    - The order of returned values is (TP, FN, TN, FP)
+    - Binary classification is assumed.
+    - Label 1 denotes the positive outcome.
+    - Label 0 denotes the negative outcome.
     """
+
+    y_test = np.array(y_test)
+    y_pred = np.array(y_pred)
+
+    if len(y_test) != len(y_pred):
+        raise ValueError(
+            "y_test and y_pred must have the same length."
+        )
+
+    valid_values = {0, 1}
+
+    if not set(np.unique(y_test)).issubset(valid_values):
+        raise ValueError(
+            "y_test must contain only {0, 1}, where 1 is the positive outcome."
+        )
+
+    if not set(np.unique(y_pred)).issubset(valid_values):
+        raise ValueError(
+            "y_pred must contain only {0, 1}, where 1 is the positive outcome."
+        )
+
+    if 1 not in y_test:
+        raise ValueError(
+            "y_test contains no positive samples (label=1). "
+            "TPR-based metrics are undefined."
+        )
+
+    if 0 not in y_test:
+        raise ValueError(
+            "y_test contains no negative samples (label=0). "
+            "FPR-based metrics are undefined."
+        )
+
     tp = fp = tn = fn = 0
 
     for a, b in zip(y_test, y_pred):
@@ -56,61 +80,47 @@ def calculate_TP_FN_FP_TN(y_test,y_pred):
 
     return tp, fn, tn, fp
 
-def calculate_TPR_TNR_FPR_FNR(tp,fn,tn,fp):
+def calculate_TPR_TNR_FPR_FNR(tp, fn, tn, fp):
     """
     Compute classification rate metrics derived from the confusion matrix.
 
-    This function calculates:
-    - True Positive Rate (TPR) / Sensitivity / Recall
-    - True Negative Rate (TNR) / Specificity
-    - False Positive Rate (FPR)
-    - False Negative Rate (FNR)
-
-    Parameters
-    ----------
-    tp : int
-        Number of true positives.
-
-    fn : int
-        Number of false negatives.
-
-    tn : int
-        Number of true negatives.
-
-    fp : int
-        Number of false positives.
-
-    Returns
-    -------
-    tpr : float
-        True Positive Rate, defined as TP / (TP + FN).
-        Measures how well the model correctly identifies positive cases.
-
-    tnr : float
-        True Negative Rate, defined as TN / (TN + FP).
-        Measures how well the model correctly identifies negative cases.
-
-    fpr : float
-        False Positive Rate, defined as FP / (FP + TN).
-        Measures the proportion of negative cases incorrectly classified
-        as positive.
-
-    fnr : float
-        False Negative Rate, defined as FN / (FN + TP).
-        Measures the proportion of positive cases incorrectly classified
-        as negative.
-
     Notes
     -----
-    - All rates lie in the range [0, 1].
+    - Counts must be non-negative integers.
+    - Label 1 is assumed to be the positive outcome.
     """
+
+    # Type check
+    for name, value in zip(
+        ["tp", "fn", "tn", "fp"], [tp, fn, tn, fp]
+    ):
+        if not isinstance(value, (int,)):
+            raise TypeError(f"{name} must be an integer. Got {type(value)}.")
+
+        if value < 0:
+            raise ValueError(f"{name} must be non-negative. Got {value}.")
+
+    # Denominator checks (critical for fairness metrics)
+    if tp + fn == 0:
+        raise ZeroDivisionError(
+            "TP + FN = 0. True Positive Rate (TPR) and "
+            "False Negative Rate (FNR) are undefined."
+        )
+
+    if tn + fp == 0:
+        raise ZeroDivisionError(
+            "TN + FP = 0. True Negative Rate (TNR) and "
+            "False Positive Rate (FPR) are undefined."
+        )
+
     TPR = tp / (tp + fn)
     TNR = tn / (tn + fp)
     FPR = fp / (tn + fp)
     FNR = fn / (tp + fn)
+
     return TPR, TNR, FPR, FNR
 
-def calculate_EOD(y_test, y_pred, privileged_group):
+def calculate_EOD(y_test, y_pred, group_labels, privileged_label):
     """
     Compute the Equal Opportunity Difference (EOD) between demographic groups.
 
@@ -128,11 +138,14 @@ def calculate_EOD(y_test, y_pred, privileged_group):
     y_pred : array-like of shape (n_samples,)
         Predicted binary labels from a classifier.
         Expected values: 0 (negative outcome) or 1 (positive outcome).
-
-    privileged_group : array-like of shape (n_samples,)
-        Binary indicator of group membership.
-        - 1 indicates membership in the privileged group
-        - 0 indicates membership in the underprivileged group
+        
+    group_labels: categorical group membership labels for a protected attribute.
+        Each entry corresponds to the same-indexed sample in y_test and y_pred.
+        
+    privileged_label : str
+        The label within group_labels considered to be the privileged group
+        (e.g. 'Male' for sex, 'Older' for age). All other labels are treated
+        as unprivileged.
 
     Returns
     -------
@@ -147,9 +160,27 @@ def calculate_EOD(y_test, y_pred, privileged_group):
     -----
     - EOD focuses exclusively on the positive class (y = 1).
     """
+    group_labels = np.array(group_labels)
+    y_test = np.array(y_test)
+    y_pred = np.array(y_pred)
+
+    if not (len(y_test) == len(y_pred) == len(group_labels)):
+        raise ValueError(
+            "y_test, y_pred, and group_labels must have the same length."
+        )
+
+    if privileged_label not in group_labels:
+        raise ValueError(
+            f"Privileged label '{privileged_label}' not found in group_labels. "
+            f"Available labels: {np.unique(group_labels)}"
+        )
+    
+    privileged_group = group_to_binary(group_labels, privileged_label)
     # Masks
+
     mask_priv = (privileged_group == 1)
     mask_unpriv = (privileged_group == 0)
+    
     
     # Privileged group
     tp_p, fn_p, fp_p, tn_p = calculate_TP_FN_FP_TN(
@@ -170,7 +201,7 @@ def calculate_EOD(y_test, y_pred, privileged_group):
     
     return EOD
 
-def calculate_AOD(y_test, y_pred, privileged_group):
+def calculate_AOD(y_test, y_pred, group_labels, privileged_label):
     """
     Compute the Average Odds Difference (AOD) between demographic groups.
 
@@ -189,10 +220,13 @@ def calculate_AOD(y_test, y_pred, privileged_group):
         Predicted binary labels from a classifier.
         Expected values: 0 (negative outcome) or 1 (positive outcome).
 
-    privileged_group : array-like of shape (n_samples,)
-        Binary indicator of group membership.
-        - 1 indicates membership in the privileged group
-        - 0 indicates membership in the underprivileged group
+    group_labels: categorical group membership labels for a protected attribute.
+        Each entry corresponds to the same-indexed sample in y_test and y_pred.
+        
+    privileged_label : str
+        The label within group_labels considered to be the privileged group
+        (e.g. 'Male' for sex, 'Older' for age). All other labels are treated
+        as unprivileged.
 
     Returns
     -------
@@ -205,13 +239,27 @@ def calculate_AOD(y_test, y_pred, privileged_group):
         Values closer to 0 indicate better fairness.
     """
     # Masks
+    group_labels = np.array(group_labels)
+    y_test = np.array(y_test)
+    y_pred = np.array(y_pred)
+
+    if not (len(y_test) == len(y_pred) == len(group_labels)):
+        raise ValueError(
+            "y_test, y_pred, and group_labels must have the same length."
+        )
+
+    if privileged_label not in group_labels:
+        raise ValueError(
+            f"Privileged label '{privileged_label}' not found in group_labels. "
+            f"Available labels: {np.unique(group_labels)}"
+        )
+    
+    privileged_group = group_to_binary(group_labels, privileged_label)
+    # Masks
+
     mask_priv = (privileged_group == 1)
     mask_unpriv = (privileged_group == 0)
     
-    
-    print(y_test)
-    print(mask_priv)
-    print(y_test[mask_priv])
     
     # Privileged group
     tp_p, fn_p, fp_p, tn_p = calculate_TP_FN_FP_TN(
@@ -232,7 +280,7 @@ def calculate_AOD(y_test, y_pred, privileged_group):
 
     return AOD
 
-def calculate_DI(y_pred, group):
+def calculate_DI(y_pred, group_labels, privileged_label):
     """
     Compute Disparate Impact (DI) between demographic groups.
 
@@ -247,11 +295,14 @@ def calculate_DI(y_pred, group):
         Predicted binary labels from a classifier.
         Expected values: 0 (negative outcome) or 1 (positive outcome).
 
-    group : array-like of shape (n_samples,)
-        Binary indicator of group membership.
-        - 1 indicates membership in the privileged group
-        - 0 indicates membership in the underprivileged group
-
+    group_labels: categorical group membership labels for a protected attribute.
+        Each entry corresponds to the same-indexed sample in y_test and y_pred.
+        
+    privileged_label : str
+        The label within group_labels considered to be the privileged group
+        (e.g. 'Male' for sex, 'Older' for age). All other labels are treated
+        as unprivileged.
+        
     Returns
     -------
     DI : float
@@ -263,8 +314,11 @@ def calculate_DI(y_pred, group):
         for the specified group.
 
     """
-    mask_priv = (group == 1)
-    mask_unpriv = (group == 0)
+    group_labels = np.array(group_labels)
+    y_pred = np.array(y_pred)
+    privileged_group = group_to_binary(group_labels, privileged_label)
+    mask_priv = (privileged_group == 1)
+    mask_unpriv = (privileged_group == 0)
 
     P_priv = np.mean(y_pred[mask_priv] == 1)
     P_unpriv = np.mean(y_pred[mask_unpriv] == 1)
