@@ -49,7 +49,7 @@ Alternatively, install from TestPyPI:
 pip install \
   -i https://test.pypi.org/simple/ \
   --extra-index-url https://pypi.org/simple \
-  intersectional-fairness-toolkit==0.1.2
+  intersectional-fairness-toolkit==0.1.3
 ```
 
 
