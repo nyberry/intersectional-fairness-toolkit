@@ -10,6 +10,6 @@ dependencies:
   - python=3.12
   - scikit-learn=1.7.1
   - pip:
-      - --extra-index-url https://pypi.python.org/simple
-      - fairness==0.1.0
+      - --extra-index-url https://test.pypi.org/simple
+      - intersectional-fairness-toolkit==0.1.0
       
