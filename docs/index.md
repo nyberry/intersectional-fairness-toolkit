@@ -12,15 +12,9 @@ into a range of health data science workflows.
 
 ## What is intersectional fairness?
 
-Fairness issues may not appear when analysing protected attributes in isolation
-(e.g. sex *or* age). Disparities often emerge at the **intersections** of attributes (([Foulds, 2019](https://arxiv.org/abs/1807.08362))).
+Fairness issues may not appear when analysing protected attributes in isolation (e.g. sex or age). Disparities often emerge at the intersections of attributes (([Foulds, 2019](https://arxiv.org/abs/1807.08362))).
 
-For example, a model may perform similarly for:
-- men vs women
-- younger vs older patients
-
-while still performing substantially worse for:
-- older women vs younger men
+For example, a model may perform similarly for: men vs women, or for: younger vs older patients;  while still performing substantially worse for: older women vs younger men.
 
 This toolkit enables systematic evaluation of such intersectional effects.
 
@@ -36,7 +30,7 @@ A standard workflow using this package is:
 4. Train any classification model
 5. Construct an evaluation DataFrame aligned with predictions
 6. Compute fairness metrics across protected groups
-7. Visualise the outputs using a range of tools
+7. Visualise the outputs
 
 ---
 
@@ -45,7 +39,7 @@ A standard workflow using this package is:
 If you are new to the toolkit, start here:
 
 - **[Tutorial](tutorial.md)**  
-  Step-by-step walkthrough using the UCI Heart Disease dataset.
+  A step-by-step walkthrough using the UCI Heart Disease dataset.
 
 - **[API reference](api_reference.md)**  
   Detailed documentation for all modules and functions  
@@ -61,5 +55,3 @@ This toolkit was developed as part of the **HPDM139 Health Data Science** module
 at the University of Exeter.
 
 It is intended for educational and research use in fairness-aware machine learning.
-
-Agendas and minutes of team meetings are [here](team_portfolio/contents.md)

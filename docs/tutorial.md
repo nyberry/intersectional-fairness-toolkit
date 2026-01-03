@@ -4,13 +4,13 @@ This toolkit helps you check whether a machine-learning model treats different g
 
 It lets you:
 
-combine protected characteristics such as sex and age to form intersectional groups (for example, female and over 55),
-
-align model predictions with the correct individuals and their characteristics,
-
-calculate fairness metrics that show how model performance differs between groups.
+- combine protected characteristics such as sex and age to form intersectional groups (for example, female and over 55),
+- align model predictions with the correct individuals and their characteristics,
+- calculate fairness metrics that show how model performance differs between groups.
 
 The toolkit is not tied to any specific dataset or model. You can use it with different health datasets and with any machine-learning model that produces predictions, making it easy to slot into existing health data science workflows.
+
+---
 
 In this tutorial we will perform an end-to-end intersectional fairness evaluation on a health dataset.
 
@@ -46,8 +46,7 @@ fairness-env\Scripts\activate
 Then, install the toolkit:
 
 ```bash
-pip install \
-  -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple intersectional-fairness-toolkit==0.1.3
+pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple intersectional-fairness-toolkit==0.1.3
 ```
 
 ## 2. Load a clinical dataset
