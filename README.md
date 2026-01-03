@@ -17,7 +17,7 @@ Bias can arise when model predictions differ across protected attributes such as
 
 ## Intersectional Fairness
 
-This package provides tools which allow researchers to evaluate fairness across intersections of protected attributes, rather than considering each attribute independently.
+This package provides tools which allow researchers to evaluate fairness across intersections of protected attributes ([Foulds, 2019](https://arxiv.org/abs/1807.08362)), rather than considering each attribute independently.
 
 For example, instead of checking:
 - men vs women
@@ -130,6 +130,12 @@ This package was developed as part of the HPDM139 module (Health Data Science) a
 
 Agendas and minutes of team meetings are in the [Team portfolio](https://raiet-bekirov.github.io/HPDM139_assignment/team_portfolio/contents/) 
 
+
+## Reference
+
+- Foulds, J. R., Islam, R., Keya, K. N., & Pan, S. (2019).
+An intersectional definition of fairness. Proceedings of the 2019 AAAI/ACM Conference on AI, Ethics, and Society, 191–198.
+https://doi.org/10.1145/3306618.3314287 (Accessed at https://arxiv.org/abs/1807.08362 )
 
 ## License
 
