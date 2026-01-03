@@ -4,6 +4,30 @@ from itertools import product
 
 
 def group_acc(group_label, subject_labels, predictions, true_statuses):
+    """
+    Find the accuracy of a group with a specific label.
+
+    Parameters
+    ----------
+    group_label : str or int
+        The label of the group for which the accuracy of the model should be
+        evaluated.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The accuracy of the model in the specified group. Returns
+        np.nan if the group has no observations.
+    """
     n_samples = len(predictions)
 
     accurate_or_not = [pred == truth
@@ -28,6 +52,31 @@ def group_acc(group_label, subject_labels, predictions, true_statuses):
 
 def group_acc_diff(group_a_label, group_b_label, subject_labels,
                    predictions, true_statuses):
+    """
+    Calculate the absolute difference in accuracy between two groups.
+
+    Parameters
+    ----------
+    group_a_label : str or int
+        The label of the first group.
+    group_b_label : str or int
+        The label of the second group.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The absolute difference in accuracy between the two groups. Returns
+        np.nan if either group has no observations.
+    """
     group_a_accuracy = group_acc(group_label=group_a_label,
                                  subject_labels=subject_labels,
                                  predictions=predictions,
@@ -47,6 +96,36 @@ def group_acc_diff(group_a_label, group_b_label, subject_labels,
 
 def group_acc_ratio(group_a_label, group_b_label, subject_labels,
                     predictions, true_statuses, natural_log=True):
+    """
+    Calculate the ratio of accuracies between two groups.
+
+    Computes the maximum of the two possible ratios (group A / group B and
+    group B / group A) to ensure the ratio is always >= 1.
+
+    Parameters
+    ----------
+    group_a_label : str or int
+        The label of the first group.
+    group_b_label : str or int
+        The label of the second group.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+    natural_log : bool, optional
+        If True, return the natural logarithm of the ratio. Default is True.
+
+    Returns
+    -------
+    float
+        The (log) ratio of accuracies between the two groups. Returns np.nan
+        if either group has no observations or if either accuracy is 0.
+    """
     group_a_accuracy = group_acc(group_label=group_a_label,
                                  subject_labels=subject_labels,
                                  predictions=predictions,
@@ -73,6 +152,33 @@ def group_acc_ratio(group_a_label, group_b_label, subject_labels,
 
 def intersect_acc(group_labels_dict, subject_labels_dict,
                   predictions, true_statuses):
+    """
+    Calculate accuracy for an intersectional group.
+
+    An intersectional group is defined by membership in specific categories
+    across multiple dimensions (e.g., specific age category and specific
+    gender).
+
+    Parameters
+    ----------
+    group_labels_dict : dict
+        Dictionary mapping category names to specific group labels that define
+        the intersectional group (e.g., {'age': 'Older', 'gender': 'Female'}).
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset. predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The accuracy of the model in the specified intersectional group.
+        Returns np.nan if the group has no observations.
+    """
     n_samples = len(predictions)
     categories = sorted(group_labels_dict.keys())
 
@@ -106,6 +212,30 @@ def intersect_acc(group_labels_dict, subject_labels_dict,
 
 
 def all_intersect_accs(subject_labels_dict, predictions, true_statuses):
+    """
+    Calculate accuracies for all possible intersectional groups.
+
+    Computes accuracy for every combination of categories in the dataset
+    (e.g., all age-group-gender combinations).
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    dict
+        Dictionary mapping intersectional group names (formatted as
+        "label1 + label2 + ...") to their respective accuracies.
+    """
     category_names = sorted(subject_labels_dict.keys())
     unique_groups = {}
     for category in category_names:
@@ -131,6 +261,27 @@ def all_intersect_accs(subject_labels_dict, predictions, true_statuses):
 
 
 def max_intersect_acc_diff(subject_labels_dict, predictions, true_statuses):
+    """
+    Calculate the maximum difference in accuracy across intersectional groups.
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The maximum difference between any two intersectional group accuracies.
+        Returns np.nan if any group has no observations.
+    """
     accuracies = all_intersect_accs(
                     subject_labels_dict=subject_labels_dict,
                     predictions=predictions,
@@ -147,6 +298,30 @@ def max_intersect_acc_diff(subject_labels_dict, predictions, true_statuses):
 
 def max_intersect_acc_ratio(subject_labels_dict, predictions, true_statuses,
                             natural_log=True):
+    """
+    Calculate the maximum ratio of accuracies across intersectional groups.
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+    natural_log : bool, optional
+        If True, return the natural logarithm of the ratio. Default is True.
+
+    Returns
+    -------
+    float
+        The (log) ratio of the maximum to minimum accuracy across all
+        intersectional groups. Returns np.nan if any group has no observations
+        or if any accuracy is 0.
+    """
     accuracies = all_intersect_accs(
                     subject_labels_dict=subject_labels_dict,
                     predictions=predictions,
@@ -167,6 +342,30 @@ def max_intersect_acc_ratio(subject_labels_dict, predictions, true_statuses,
 
 
 def group_fnr(group_label, subject_labels, predictions, true_statuses):
+    """
+    Find the false negative rate of a group with a specific label.
+
+    Parameters
+    ----------
+    group_label : str or int
+        The label of the group for which the false negative rate of the model
+        should be evaluated.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The false negative rate of the model in the specified group. Returns
+        np.nan if the group has no observations.
+    """
     n_samples = len(predictions)
 
     accurate_or_not = [pred == truth
@@ -193,6 +392,32 @@ def group_fnr(group_label, subject_labels, predictions, true_statuses):
 
 def group_fnr_diff(group_a_label, group_b_label, subject_labels,
                    predictions, true_statuses):
+    """
+    Calculate the absolute difference in false negative rate between two
+    groups.
+
+    Parameters
+    ----------
+    group_a_label : str or int
+        The label of the first group.
+    group_b_label : str or int
+        The label of the second group.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The absolute difference in false negative rate between the two groups.
+        Returns np.nan if either group has no observations.
+    """
     group_a_fnr = group_fnr(group_label=group_a_label,
                             subject_labels=subject_labels,
                             predictions=predictions,
@@ -212,6 +437,37 @@ def group_fnr_diff(group_a_label, group_b_label, subject_labels,
 
 def group_fnr_ratio(group_a_label, group_b_label, subject_labels,
                     predictions, true_statuses, natural_log=True):
+    """
+    Calculate the ratio of false negative rates between two groups.
+
+    Computes the maximum of the two possible ratios (group A / group B and
+    group B / group A) to ensure the ratio is always >= 1.
+
+    Parameters
+    ----------
+    group_a_label : str or int
+        The label of the first group.
+    group_b_label : str or int
+        The label of the second group.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+    natural_log : bool, optional
+        If True, return the natural logarithm of the ratio. Default is True.
+
+    Returns
+    -------
+    float
+        The (log) ratio of false negative rates between the two groups. Returns
+        np.nan if either group has no observations or if either false negative
+        rate is 0.
+    """
     group_a_fnr = group_fnr(group_label=group_a_label,
                             subject_labels=subject_labels,
                             predictions=predictions,
@@ -238,6 +494,34 @@ def group_fnr_ratio(group_a_label, group_b_label, subject_labels,
 
 def intersect_fnr(group_labels_dict, subject_labels_dict,
                   predictions, true_statuses):
+    """
+    Calculate false negative rate for an intersectional group.
+
+    An intersectional group is defined by membership in specific categories
+    across multiple dimensions (e.g., specific age category and specific
+    gender).
+
+    Parameters
+    ----------
+    group_labels_dict : dict
+        Dictionary mapping category names to specific group labels that define
+        the intersectional group (e.g., {'age': 'Older', 'gender': 'Female'}).
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The false negative rate of the model in the specified intersectional
+        group. Returns np.nan if the group has no observations.
+    """
     n_samples = len(predictions)
     categories = sorted(group_labels_dict.keys())
 
@@ -273,6 +557,30 @@ def intersect_fnr(group_labels_dict, subject_labels_dict,
 
 
 def all_intersect_fnrs(subject_labels_dict, predictions, true_statuses):
+    """
+    Calculate false negative rates for all possible intersectional groups.
+
+    Computes false negative rate for every combination of categories in the
+    dataset (e.g., all age-group-gender combinations).
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    dict
+        Dictionary mapping intersectional group names (as strings with ' + '
+        separating categories) to their false negative rates.
+    """
     category_names = sorted(subject_labels_dict.keys())
     unique_groups = {}
     for category in category_names:
@@ -301,6 +609,28 @@ def max_intersect_fnr_diff(subject_labels_dict, predictions, true_statuses):
     fnrs = all_intersect_fnrs(subject_labels_dict=subject_labels_dict,
                               predictions=predictions,
                               true_statuses=true_statuses)
+    """
+    Calculate the maximum difference in false negative rate across all intersectional groups.
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The difference between the maximum and minimum false negative rate
+        across all intersectional groups. Returns np.nan if any group has no
+        observations.
+    """
     fnr_values = np.array(list(fnrs.values()))
 
     if any(np.isnan(fnr_values)):
@@ -313,6 +643,31 @@ def max_intersect_fnr_diff(subject_labels_dict, predictions, true_statuses):
 
 def max_intersect_fnr_ratio(subject_labels_dict, predictions, true_statuses,
                             natural_log=True):
+    """
+    Calculate the ratio of the maximum to minimum false negative rate across
+    all intersectional groups.
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+    natural_log : bool, optional
+        If True, return the natural logarithm of the ratio. Default is True.
+
+    Returns
+    -------
+    float
+        The (log) ratio of the maximum to minimum false negative rate across
+        all intersectional groups. Returns np.nan if any group has no
+        observations or if any false negative rate is 0.
+    """
     fnrs = all_intersect_fnrs(subject_labels_dict=subject_labels_dict,
                               predictions=predictions,
                               true_statuses=true_statuses)
@@ -332,6 +687,30 @@ def max_intersect_fnr_ratio(subject_labels_dict, predictions, true_statuses,
 
 
 def group_fpr(group_label, subject_labels, predictions, true_statuses):
+    """
+    Find the false positive rate of a group with a specific label.
+
+    Parameters
+    ----------
+    group_label : str or int
+        The label of the group for which the false positive rate of the model
+        should be evaluated.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The false positive rate of the model in the specified group. Returns
+        np.nan if the group has no observations.
+    """
     n_samples = len(predictions)
 
     accurate_or_not = [pred == truth
@@ -358,6 +737,32 @@ def group_fpr(group_label, subject_labels, predictions, true_statuses):
 
 def group_fpr_diff(group_a_label, group_b_label, subject_labels,
                    predictions, true_statuses):
+    """
+    Calculate the absolute difference in false positive rate between two
+    groups.
+
+    Parameters
+    ----------
+    group_a_label : str or int
+        The label of the first group.
+    group_b_label : str or int
+        The label of the second group.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The absolute difference in false positive rate between the two groups.
+        Returns np.nan if either group has no observations.
+    """
     group_a_fpr = group_fpr(group_label=group_a_label,
                             subject_labels=subject_labels,
                             predictions=predictions,
@@ -377,6 +782,37 @@ def group_fpr_diff(group_a_label, group_b_label, subject_labels,
 
 def group_fpr_ratio(group_a_label, group_b_label, subject_labels,
                     predictions, true_statuses, natural_log=True):
+    """
+    Calculate the ratio of false positive rates between two groups.
+
+    Computes the maximum of the two possible ratios (group A / group B and
+    group B / group A) to ensure the ratio is always >= 1.
+
+    Parameters
+    ----------
+    group_a_label : str or int
+        The label of the first group.
+    group_b_label : str or int
+        The label of the second group.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+    natural_log : bool, optional
+        If True, return the natural logarithm of the ratio. Default is True.
+
+    Returns
+    -------
+    float
+        The (log) ratio of false positive rates between the two groups. Returns
+        np.nan if either group has no observations or if either false positive
+        rate is 0.
+    """
     group_a_fpr = group_fpr(group_label=group_a_label,
                             subject_labels=subject_labels,
                             predictions=predictions,
@@ -403,6 +839,34 @@ def group_fpr_ratio(group_a_label, group_b_label, subject_labels,
 
 def intersect_fpr(group_labels_dict, subject_labels_dict,
                   predictions, true_statuses):
+    """
+    Calculate false positive rate for an intersectional group.
+
+    An intersectional group is defined by membership in specific categories
+    across multiple dimensions (e.g., specific age category and specific
+    gender).
+
+    Parameters
+    ----------
+    group_labels_dict : dict
+        Dictionary mapping category names to specific group labels that define
+        the intersectional group (e.g., {'age': 'Older', 'gender': 'Female'}).
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The false positive rate of the model in the specified intersectional
+        group. Returns np.nan if the group has no observations.
+    """
     n_samples = len(predictions)
     categories = sorted(group_labels_dict.keys())
 
@@ -438,6 +902,30 @@ def intersect_fpr(group_labels_dict, subject_labels_dict,
 
 
 def all_intersect_fprs(subject_labels_dict, predictions, true_statuses):
+    """
+    Calculate false positive rates for all possible intersectional groups.
+
+    Computes false positive rate for every combination of categories in the
+    dataset (e.g., all age-group-gender combinations).
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    dict
+        Dictionary mapping intersectional group names (as strings with ' + '
+        separating categories) to their false positive rates.
+    """
     category_names = sorted(subject_labels_dict.keys())
     unique_groups = {}
     for category in category_names:
@@ -463,6 +951,28 @@ def all_intersect_fprs(subject_labels_dict, predictions, true_statuses):
 
 
 def max_intersect_fpr_diff(subject_labels_dict, predictions, true_statuses):
+    """
+    Calculate the maximum difference in false positive rate across all intersectional groups.
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The difference between the maximum and minimum false positive rate
+        across all intersectional groups. Returns np.nan if any group has no
+        observations.
+    """
     fprs = all_intersect_fprs(subject_labels_dict=subject_labels_dict,
                               predictions=predictions,
                               true_statuses=true_statuses)
@@ -478,6 +988,30 @@ def max_intersect_fpr_diff(subject_labels_dict, predictions, true_statuses):
 
 def max_intersect_fpr_ratio(subject_labels_dict, predictions, true_statuses,
                             natural_log=True):
+    """
+    Calculate the ratio of the maximum to minimum false positive rate across all intersectional groups.
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+    natural_log : bool, optional
+        If True, return the natural logarithm of the ratio. Default is True.
+
+    Returns
+    -------
+    float
+        The (log) ratio of the maximum to minimum false positive rate across
+        all intersectional groups. Returns np.nan if any group has no
+        observations or if any false positive rate is 0.
+    """
     fprs = all_intersect_fnrs(subject_labels_dict=subject_labels_dict,
                               predictions=predictions,
                               true_statuses=true_statuses)
@@ -497,6 +1031,30 @@ def max_intersect_fpr_ratio(subject_labels_dict, predictions, true_statuses,
 
 
 def group_for(group_label, subject_labels, predictions, true_statuses):
+    """
+    Find the false omission rate of a group with a specific label.
+
+    Parameters
+    ----------
+    group_label : str or int
+        The label of the group for which the false omission rate of the model
+        should be evaluated.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The false omission rate of the model in the specified group. Returns
+        np.nan if the group has no observations.
+    """
     n_samples = len(predictions)
 
     accurate_or_not = [pred == truth
@@ -522,6 +1080,32 @@ def group_for(group_label, subject_labels, predictions, true_statuses):
 
 def group_for_diff(group_a_label, group_b_label, subject_labels,
                    predictions, true_statuses):
+    """
+    Calculate the absolute difference in false omission rate between two
+    groups.
+
+    Parameters
+    ----------
+    group_a_label : str or int
+        The label of the first group.
+    group_b_label : str or int
+        The label of the second group.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The absolute difference in false omission rate between the two groups.
+        Returns np.nan if either group has no observations.
+    """
     group_a_for = group_for(group_label=group_a_label,
                             subject_labels=subject_labels,
                             predictions=predictions,
@@ -541,6 +1125,37 @@ def group_for_diff(group_a_label, group_b_label, subject_labels,
 
 def group_for_ratio(group_a_label, group_b_label, subject_labels,
                     predictions, true_statuses, natural_log=True):
+    """
+    Calculate the ratio of false omission rates between two groups.
+
+    Computes the maximum of the two possible ratios (group A / group B and
+    group B / group A) to ensure the ratio is always >= 1.
+
+    Parameters
+    ----------
+    group_a_label : str or int
+        The label of the first group.
+    group_b_label : str or int
+        The label of the second group.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+    natural_log : bool, optional
+        If True, return the natural logarithm of the ratio. Default is True.
+
+    Returns
+    -------
+    float
+        The (log) ratio of false omission rates between the two groups. Returns
+        np.nan if either group has no observations or if either false omission
+        rate is 0.
+    """
     group_a_for = group_for(group_label=group_a_label,
                             subject_labels=subject_labels,
                             predictions=predictions,
@@ -567,6 +1182,34 @@ def group_for_ratio(group_a_label, group_b_label, subject_labels,
 
 def intersect_for(group_labels_dict, subject_labels_dict,
                   predictions, true_statuses):
+    """
+    Calculate false omission rate for an intersectional group.
+
+    An intersectional group is defined by membership in specific categories
+    across multiple dimensions (e.g., specific age category and specific
+    gender).
+
+    Parameters
+    ----------
+    group_labels_dict : dict
+        Dictionary mapping category names to specific group labels that define
+        the intersectional group (e.g., {'age': 'Older', 'gender': 'Female'}).
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The false omission rate of the model in the specified intersectional
+        group. Returns np.nan if the group has no observations.
+    """
     n_samples = len(predictions)
     categories = sorted(group_labels_dict.keys())
 
@@ -601,6 +1244,30 @@ def intersect_for(group_labels_dict, subject_labels_dict,
 
 
 def all_intersect_fors(subject_labels_dict, predictions, true_statuses):
+    """
+    Calculate false omission rates for all possible intersectional groups.
+
+    Computes false omission rate for every combination of categories in the
+    dataset (e.g., all age-group-gender combinations).
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    dict
+        Dictionary mapping intersectional group names (as strings with ' + '
+        separating categories) to their false omission rates.
+    """
     category_names = sorted(subject_labels_dict.keys())
     unique_groups = {}
     for category in category_names:
@@ -626,6 +1293,28 @@ def all_intersect_fors(subject_labels_dict, predictions, true_statuses):
 
 
 def max_intersect_for_diff(subject_labels_dict, predictions, true_statuses):
+    """
+    Calculate the maximum difference in false omission rate across all intersectional groups.
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The difference between the maximum and minimum false omission rate
+        across all intersectional groups. Returns np.nan if any group has no
+        observations.
+    """
     fors = all_intersect_fors(subject_labels_dict=subject_labels_dict,
                               predictions=predictions,
                               true_statuses=true_statuses)
@@ -641,6 +1330,30 @@ def max_intersect_for_diff(subject_labels_dict, predictions, true_statuses):
 
 def max_intersect_for_ratio(subject_labels_dict, predictions, true_statuses,
                             natural_log=True):
+    """
+    Calculate the ratio of the maximum to minimum false omission rate across all intersectional groups.
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+    natural_log : bool, optional
+        If True, return the natural logarithm of the ratio. Default is True.
+
+    Returns
+    -------
+    float
+        The (log) ratio of the maximum to minimum false omission rate across
+        all intersectional groups. Returns np.nan if any group has no
+        observations or if any false omission rate is 0.
+    """
     fors = all_intersect_fnrs(subject_labels_dict=subject_labels_dict,
                               predictions=predictions,
                               true_statuses=true_statuses)
@@ -660,6 +1373,30 @@ def max_intersect_for_ratio(subject_labels_dict, predictions, true_statuses,
 
 
 def group_fdr(group_label, subject_labels, predictions, true_statuses):
+    """
+    Find the false discovery rate of a group with a specific label.
+
+    Parameters
+    ----------
+    group_label : str or int
+        The label of the group for which the false discovery rate of the model
+        should be evaluated.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The false discovery rate of the model in the specified group. Returns
+        np.nan if the group has no observations.
+    """
     n_samples = len(predictions)
 
     accurate_or_not = [pred == truth
@@ -685,6 +1422,32 @@ def group_fdr(group_label, subject_labels, predictions, true_statuses):
 
 def group_fdr_diff(group_a_label, group_b_label, subject_labels,
                    predictions, true_statuses):
+    """
+    Calculate the absolute difference in false discovery rate between two
+    groups.
+
+    Parameters
+    ----------
+    group_a_label : str or int
+        The label of the first group.
+    group_b_label : str or int
+        The label of the second group.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The absolute difference in false discovery rate between the two groups.
+        Returns np.nan if either group has no observations.
+    """
     group_a_fdr = group_fdr(group_label=group_a_label,
                             subject_labels=subject_labels,
                             predictions=predictions,
@@ -704,6 +1467,37 @@ def group_fdr_diff(group_a_label, group_b_label, subject_labels,
 
 def group_fdr_ratio(group_a_label, group_b_label, subject_labels,
                     predictions, true_statuses, natural_log=True):
+    """
+    Calculate the ratio of false discovery rates between two groups.
+
+    Computes the maximum of the two possible ratios (group A / group B and
+    group B / group A) to ensure the ratio is always >= 1.
+
+    Parameters
+    ----------
+    group_a_label : str or int
+        The label of the first group.
+    group_b_label : str or int
+        The label of the second group.
+    subject_labels : dict
+        A dictionary containing subject labels for every observation in the
+        evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+    natural_log : bool, optional
+        If True, return the natural logarithm of the ratio. Default is True.
+
+    Returns
+    -------
+    float
+        The (log) ratio of false discovery rates between the two groups.
+        Returns np.nan if either group has no observations or if either false
+        discovery rate is 0.
+    """
     group_a_fdr = group_fdr(group_label=group_a_label,
                             subject_labels=subject_labels,
                             predictions=predictions,
@@ -730,6 +1524,34 @@ def group_fdr_ratio(group_a_label, group_b_label, subject_labels,
 
 def intersect_fdr(group_labels_dict, subject_labels_dict,
                   predictions, true_statuses):
+    """
+    Calculate false discovery rate for an intersectional group.
+
+    An intersectional group is defined by membership in specific categories
+    across multiple dimensions (e.g., specific age category and specific
+    gender).
+
+    Parameters
+    ----------
+    group_labels_dict : dict
+        Dictionary mapping category names to specific group labels that define
+        the intersectional group (e.g., {'age': 'Older', 'gender': 'Female'}).
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The false discovery rate of the model in the specified intersectional
+        group. Returns np.nan if the group has no observations.
+    """
     n_samples = len(predictions)
     categories = sorted(group_labels_dict.keys())
 
@@ -764,6 +1586,30 @@ def intersect_fdr(group_labels_dict, subject_labels_dict,
 
 
 def all_intersect_fdrs(subject_labels_dict, predictions, true_statuses):
+    """
+    Calculate false discovery rates for all possible intersectional groups.
+
+    Computes false discovery rate for every combination of categories in the
+    dataset (e.g., all age-group-gender combinations).
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    dict
+        Dictionary mapping intersectional group names (as strings with ' + '
+        separating categories) to their false discovery rates.
+    """
     category_names = sorted(subject_labels_dict.keys())
     unique_groups = {}
     for category in category_names:
@@ -789,6 +1635,28 @@ def all_intersect_fdrs(subject_labels_dict, predictions, true_statuses):
 
 
 def max_intersect_fdr_diff(subject_labels_dict, predictions, true_statuses):
+    """
+    Calculate the maximum difference in false discovery rate across all intersectional groups.
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+
+    Returns
+    -------
+    float
+        The difference between the maximum and minimum false discovery rate
+        across all intersectional groups. Returns np.nan if any group has no
+        observations.
+    """
     fdrs = all_intersect_fdrs(subject_labels_dict=subject_labels_dict,
                               predictions=predictions,
                               true_statuses=true_statuses)
@@ -804,6 +1672,31 @@ def max_intersect_fdr_diff(subject_labels_dict, predictions, true_statuses):
 
 def max_intersect_fdr_ratio(subject_labels_dict, predictions, true_statuses,
                             natural_log=True):
+    """
+    Calculate the ratio of the maximum to minimum false discovery rate across
+    all intersectional groups.
+
+    Parameters
+    ----------
+    subject_labels_dict : dict
+        Dictionary mapping category names to lists of labels for each
+        observation in the evaluation dataset.
+    predictions : list[bool]
+        A list of predicted diagnoses for each observation in the
+        evaluation dataset.
+    true_statuses : list[bool]
+        A list of true diagnoses for each observation in the
+        evaluation dataset.
+    natural_log : bool, optional
+        If True, return the natural logarithm of the ratio. Default is True.
+
+    Returns
+    -------
+    float
+        The (log) ratio of the maximum to minimum false discovery rate across
+        all intersectional groups. Returns np.nan if any group has no
+        observations or if any false discovery rate is 0.
+    """
     fdrs = all_intersect_fnrs(subject_labels_dict=subject_labels_dict,
                               predictions=predictions,
                               true_statuses=true_statuses)
