@@ -267,6 +267,7 @@ When looking at the fairness results, it helps to ask a few simple questions:
 - Could some poor results be explained by very small numbers of people in certain groups?
 
 If fairness issues are identified, possible ways to address them include:
+
 - collecting more data for under-represented groups,
 - changing the decision threshold used by the model,
 - trying a different type of model that behaves more consistently across groups.

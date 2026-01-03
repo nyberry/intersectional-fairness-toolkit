@@ -109,6 +109,7 @@ print("Accuracy ratio:", acc)
 ```
 
 A complete end-to-end example using the UCI Heart Disease dataset is provided at [`examples/uci_heart_demo.ipynb`](https://github.com/Raiet-Bekirov/HPDM139_assignment/blob/main/examples/uci_heart_demo.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Raiet-Bekirov/HPDM139_assignment/HEAD?urlpath=%2Fdoc%2Ftree%2Fexamples%2Fuci_heart_demo.ipynb)
 
 ## Documentation
 
