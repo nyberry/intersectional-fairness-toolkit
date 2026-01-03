@@ -34,9 +34,7 @@ Then, install the toolkit:
 
 ```bash
 pip install \
-  -i https://test.pypi.org/simple/ \
-  --extra-index-url https://pypi.org/simple \
-  intersectional-fairness-toolkit==0.1.3
+  -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple intersectional-fairness-toolkit==0.1.3
 ```
 
 ## Load a clinical dataset
