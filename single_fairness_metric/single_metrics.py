@@ -323,4 +323,6 @@ def calculate_DI(y_pred, group_labels, privileged_label):
     P_priv = np.mean(y_pred[mask_priv] == 1)
     P_unpriv = np.mean(y_pred[mask_unpriv] == 1)
 
-    return P_unpriv / P_priv
+    DI = P_unpriv / P_priv
+
+    return DI
