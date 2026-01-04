@@ -38,7 +38,7 @@ In this package, intersectional groups are evaluated using differential fairness
 Install from PyPI (recommended):
 
 ```bash
-pip install intersectional-fairness-toolkit==0.2.1
+pip install intersectional-fairness-toolkit
 ```
 
 Alternatively, clone the repository and install the package in editable mode:
