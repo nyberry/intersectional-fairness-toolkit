@@ -1,7 +1,4 @@
-#Import necessary packages
-import pandas as pd
 import numpy as np
-import itertools
 
 
 def group_to_binary(labels, privileged_label):
@@ -13,14 +10,15 @@ def group_to_binary(labels, privileged_label):
     returns: numpy array (1 = privileged, 0 = unprivileged)
     """
     labels = np.array(labels)
-    
+
     if privileged_label not in labels:
         raise ValueError(
-            f"Privileged label '{privileged_label}' not found in group labels. "
+            f"Privileged label'{privileged_label}'not found in group labels. "
             f"Available labels: {np.unique(labels)}"
         )
 
     return (labels == privileged_label).astype(int)
+
 
 def calculate_TP_FN_FP_TN(y_test, y_pred):
     """
@@ -38,9 +36,7 @@ def calculate_TP_FN_FP_TN(y_test, y_pred):
     y_pred = np.array(y_pred)
 
     if len(y_test) != len(y_pred):
-        raise ValueError(
-            "y_test and y_pred must have the same length."
-        )
+        raise ValueError("y_test and y_pred must have the same length.")
 
     valid_values = {0, 1}
 
@@ -80,6 +76,7 @@ def calculate_TP_FN_FP_TN(y_test, y_pred):
 
     return tp, fn, tn, fp
 
+
 def calculate_TPR_TNR_FPR_FNR(tp, fn, tn, fp):
     """
     Compute classification rate metrics derived from the confusion matrix.
@@ -91,9 +88,7 @@ def calculate_TPR_TNR_FPR_FNR(tp, fn, tn, fp):
     """
 
     # Type check
-    for name, value in zip(
-        ["tp", "fn", "tn", "fp"], [tp, fn, tn, fp]
-    ):
+    for name, value in zip(["tp", "fn", "tn", "fp"], [tp, fn, tn, fp]):
         if not isinstance(value, (int,)):
             raise TypeError(f"{name} must be an integer. Got {type(value)}.")
 
@@ -120,6 +115,7 @@ def calculate_TPR_TNR_FPR_FNR(tp, fn, tn, fp):
 
     return TPR, TNR, FPR, FNR
 
+
 def calculate_EOD(y_test, y_pred, group_labels, privileged_label):
     """
     Compute the Equal Opportunity Difference (EOD) between demographic groups.
@@ -138,10 +134,11 @@ def calculate_EOD(y_test, y_pred, group_labels, privileged_label):
     y_pred : array-like of shape (n_samples,)
         Predicted binary labels from a classifier.
         Expected values: 0 (negative outcome) or 1 (positive outcome).
-        
-    group_labels: categorical group membership labels for a protected attribute.
+
+    group_labels: categorical group membership
+    labels for a protected attribute.
         Each entry corresponds to the same-indexed sample in y_test and y_pred.
-        
+
     privileged_label : str
         The label within group_labels considered to be the privileged group
         (e.g. 'Male' for sex, 'Older' for age). All other labels are treated
@@ -171,35 +168,37 @@ def calculate_EOD(y_test, y_pred, group_labels, privileged_label):
 
     if privileged_label not in group_labels:
         raise ValueError(
-            f"Privileged label '{privileged_label}' not found in group_labels. "
+            f"Privileged label '{privileged_label}' not found in group_labels."
             f"Available labels: {np.unique(group_labels)}"
         )
-    
+
     privileged_group = group_to_binary(group_labels, privileged_label)
     # Masks
 
-    mask_priv = (privileged_group == 1)
-    mask_unpriv = (privileged_group == 0)
-    
-    
+    mask_priv = privileged_group == 1
+    mask_unpriv = privileged_group == 0
+
     # Privileged group
     tp_p, fn_p, fp_p, tn_p = calculate_TP_FN_FP_TN(
-        y_test[mask_priv],
-        y_pred[mask_priv]
+        y_test[mask_priv], y_pred[mask_priv]
     )
-    TPR_p, TNR_p, FPR_p, FNR_p = calculate_TPR_TNR_FPR_FNR(tp_p,fn_p,tn_p,fp_p)
-    
+    TPR_p, TNR_p, FPR_p, FNR_p = calculate_TPR_TNR_FPR_FNR(
+        tp_p, fn_p, tn_p, fp_p
+    )
+
     # Underprivileged group
     tp_u, fn_u, fp_u, tn_u = calculate_TP_FN_FP_TN(
-        y_test[mask_unpriv],
-        y_pred[mask_unpriv]
+        y_test[mask_unpriv], y_pred[mask_unpriv]
     )
-    TPR_u, TNR_u, FPR_u, FNR_u = calculate_TPR_TNR_FPR_FNR(tp_u,fn_u,tn_u,fp_u)
-    
+    TPR_u, TNR_u, FPR_u, FNR_u = calculate_TPR_TNR_FPR_FNR(
+        tp_u, fn_u, tn_u, fp_u
+    )
+
     # Equal Opportunity Difference
     EOD = abs(TPR_u - TPR_p)
-    
+
     return EOD
+
 
 def calculate_AOD(y_test, y_pred, group_labels, privileged_label):
     """
@@ -220,9 +219,10 @@ def calculate_AOD(y_test, y_pred, group_labels, privileged_label):
         Predicted binary labels from a classifier.
         Expected values: 0 (negative outcome) or 1 (positive outcome).
 
-    group_labels: categorical group membership labels for a protected attribute.
+    group_labels: categorical group membership labels for a
+    protected attribute.
         Each entry corresponds to the same-indexed sample in y_test and y_pred.
-        
+
     privileged_label : str
         The label within group_labels considered to be the privileged group
         (e.g. 'Male' for sex, 'Older' for age). All other labels are treated
@@ -250,35 +250,37 @@ def calculate_AOD(y_test, y_pred, group_labels, privileged_label):
 
     if privileged_label not in group_labels:
         raise ValueError(
-            f"Privileged label '{privileged_label}' not found in group_labels. "
+            f"Privileged label '{privileged_label}' not found in group_labels."
             f"Available labels: {np.unique(group_labels)}"
         )
-    
+
     privileged_group = group_to_binary(group_labels, privileged_label)
     # Masks
 
-    mask_priv = (privileged_group == 1)
-    mask_unpriv = (privileged_group == 0)
-    
-    
+    mask_priv = privileged_group == 1
+    mask_unpriv = privileged_group == 0
+
     # Privileged group
     tp_p, fn_p, fp_p, tn_p = calculate_TP_FN_FP_TN(
-        y_test[mask_priv],
-        y_pred[mask_priv]
+        y_test[mask_priv], y_pred[mask_priv]
     )
-    TPR_p, TNR_p, FPR_p, FNR_p = calculate_TPR_TNR_FPR_FNR(tp_p,fn_p,tn_p,fp_p)
-    
+    TPR_p, TNR_p, FPR_p, FNR_p = calculate_TPR_TNR_FPR_FNR(
+        tp_p, fn_p, tn_p, fp_p
+    )
+
     # Underprivileged group
     tp_u, fn_u, fp_u, tn_u = calculate_TP_FN_FP_TN(
-        y_test[mask_unpriv],
-        y_pred[mask_unpriv]
+        y_test[mask_unpriv], y_pred[mask_unpriv]
     )
-    TPR_u, TNR_u, FPR_u, FNR_u = calculate_TPR_TNR_FPR_FNR(tp_u,fn_u,tn_u,fp_u)
-    
+    TPR_u, TNR_u, FPR_u, FNR_u = calculate_TPR_TNR_FPR_FNR(
+        tp_u, fn_u, tn_u, fp_u
+    )
+
     # Average Odds Difference
     AOD = ((FPR_u - FPR_p) + (TPR_u - TPR_p)) / 2
 
     return AOD
+
 
 def calculate_DI(y_pred, group_labels, privileged_label):
     """
@@ -295,14 +297,15 @@ def calculate_DI(y_pred, group_labels, privileged_label):
         Predicted binary labels from a classifier.
         Expected values: 0 (negative outcome) or 1 (positive outcome).
 
-    group_labels: categorical group membership labels for a protected attribute.
+    group_labels: categorical group membership
+    labels for a protected attribute.
         Each entry corresponds to the same-indexed sample in y_test and y_pred.
-        
+
     privileged_label : str
         The label within group_labels considered to be the privileged group
         (e.g. 'Male' for sex, 'Older' for age). All other labels are treated
         as unprivileged.
-        
+
     Returns
     -------
     DI : float
@@ -317,11 +320,17 @@ def calculate_DI(y_pred, group_labels, privileged_label):
     group_labels = np.array(group_labels)
     y_pred = np.array(y_pred)
     privileged_group = group_to_binary(group_labels, privileged_label)
-    mask_priv = (privileged_group == 1)
-    mask_unpriv = (privileged_group == 0)
+    mask_priv = privileged_group == 1
+    mask_unpriv = privileged_group == 0
 
     P_priv = np.mean(y_pred[mask_priv] == 1)
     P_unpriv = np.mean(y_pred[mask_unpriv] == 1)
+
+    if P_priv == 0:
+        raise ZeroDivisionError(
+            "Disparate Impact is undefined when the privileged group "
+            "has zero positive predictions."
+        )
 
     DI = P_unpriv / P_priv
 
