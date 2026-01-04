@@ -5,11 +5,6 @@ __pycache__/
 *.pyo
 *.pyc
 
-# Virtual environments
-venv/
-env/
-.venv/
-
 # Distribution / packaging
 build/
 dist/
@@ -32,3 +27,10 @@ local_git_files/
 
 # MkDocs build output
 site/
+
+
+# Local environments
+fairness-env-test/
+.env/
+.venv/
+venv/
