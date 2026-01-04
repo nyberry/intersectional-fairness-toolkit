@@ -1,0 +1,22 @@
+name: fairness
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+
+  # Core science stack
+  - numpy=2.3.2
+  - pandas=2.3.2
+  - scikit-learn=1.7.1
+  - matplotlib=3.10.6
+
+  # Testing and notebooks
+  - pytest=8.4.1
+  - jupyterlab=4.4.6
+
+  # Documentation
+  - mkdocs
+  - mkdocs-material
+  - mkdocstrings
+  - mkdocstrings-python

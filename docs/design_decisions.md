@@ -1,150 +1,155 @@
-# Design Decisions
+## Design Decisions
 
-## Design of Data Loading and processing module
+This document outlines the key design decisions made in the development of the Intersectional Fairness Toolkit.
 
-This module provides utilities for loading and preparing tabular health datasets for fairness analysis.
+### 1. Purpose and Scope
 
-It is designed to be dataset-agnostic, meaning it can work with different datasets. It is also model-agnostic, meaning the outputs produced should be suitable for any classifier.
+The purpose of this project is to provide a lightweight, transparent, and extensible Python toolkit for evaluating intersectional fairness in machine-learning models applied to tabular health datasets.
 
+The toolkit is intended to:
 
-### Overview of module
-
-
-`data.py` handles dataset loading.
-
-`preprocess.py` handles preprocessing, and train / test splitting.
-
-`groups.py` creates intersectional group labels from protected attributes
-
-Together, these functions take the raw dataset, process it, and supply the protected-group inputs needed for fairness metrics functions.
+- Support health data scientists and researchers
+- Demonstrate best practice software engineering for an MSc-level project
 
 
-### Loading a dataset
+### 2. Intended Use and Audience
+
+The main intended users are:
+
+- Health data science students
+- Researchers evaluating fairness in clinical prediction models
+- Practitioners exploring bias in tabular health data
+
+The toolkit assumes:
+
+- A binary classification setting, which is common in healthcare
+- Predictions (y_pred) are generated externally by any model
+
+Users may want to use their own metrics, models, or datasets. As a result, the toolkit is designed to be model-agnostic and dataset-agnostic.
+
+### 3. Separation of Concerns
+
+A core design principle was separation of responsibilities across modules.
+
+Fairness analysis typically involves:
+- Data loading and preprocessing
+- Model training (external)
+- Fairness evaluation
+- Visualisation
+
+To keep the system flexible and maintainable:
+
+- Model training is not part of the core fairness API
+- Data preparation is kept distinct from metric computation
+- Metrics operate on simple, explicit inputs
+
+This makes it easier to swap models, reuse metrics, and test components independently.
+
+### 4. Package Structure
+
+The project is implemented as a Python package using a src/ layout:
+
+src/
+  fairness/
+    data.py
+    preprocess.py
+    groups.py
+    adapters.py
+    metrics/
+    plots/
+    demo/
+
+Key design choices:
+
+- using src/ Prevents accidental imports from the repository root.
+
+- Each module has a single responsibility (e.g. groups.py only handles group construction).
+
+- Functions accept and return plain Python objects (DataFrame, lists, dicts)
+
+This structure supports reusability, testing and long-term extensibility
+
+### 5. Data Flow Into Fairness Metrics
+
+A key design decision was to standardise how data is passed into fairness metrics.
+
+Rather than passing many loosely related arrays, the toolkit constructs a single evaluation DataFrame `eval_df` with aligned columns:
+
+- subject_label, the intersectional protected group
+- y_pred, the model prediction
+- y_true, the true outcome
+
+Each row corresponds to one individual in the test set. This maintains alignment between predictions and protected attributes.
+
+Adapters are provided to unpack this DataFrame into formats required by different metric implementations.
+
+### 6. Intersectional Group Construction
+
+Intersectional groups are defined by combining multiple protected attributes (e.g. Sex & age_group).
+
+Design decisions include:
+
+- Human-readable group labels (e.g. Sex=0|age_group=older)
+- Explicit handling of missing values
+- Row-by-row alignment with predictions
+
+The toolkit avoids hard-coding protected attributes, allowing users to define the intersections they wish to examine.
+
+### 7. Choice of Fairness Metrics
+
+The toolkit supports group-based and intersectional fairness metrics, including:
+
+- Accuracy differences and ratios
+- False negative rate (FNR)
+- False positive rate (FPR)
+- Omission and discovery rates
+- Maximum intersectional disparities
+- Differential-style worst-case ratios
+
+These metrics are of clinical importance, and allow examination of worst-case harms, as wekl as averages.
+
+Metrics are implemented as functions, making them easy to test and reuse.
+
+### 8. Visualisation Strategy
+
+Visualisation code is separated into its own module (plots/).
+
+Design goals:
+
+- Accept outputs from metric functions
+- Support quick identification of high-risk groups
+
+### 9. Documentation Strategy
+
+Tools
+
+- MkDocs with Material theme
+- MkDocStrings for API documentation from docstrings
+- Hosted via GitHub Pages
+
+Structure
+
+- index.md, an overview
+- tutorial.md, an end-to-end example
+- api_reference.md,  generated from code
+- design_decisions.md, this document
+- team_portfolio/, evidence of collaboration
 
 
-```python
-from data import load_csv
-df = load_csv("fairness/data/heart.csv")
-```
+### 10. Collaboration and Extensibility
 
-Dataset-specific loaders are added as wrappers around this function as needed.
+The toolkit was designed to support parallel development. Metrics, visualisations, and pipelines can evolve independently.
 
-### Preprocessing
-
-Preprocessing prepares a raw dataset for both model training and fairness analysis.
-
-There are 3 steps:
-
-#### 1. Fairness-oriented preprocessing
-
-Before fairness analysis, the dataset must be prepared so that protected attributes can be meaningfully compared across groups.
-
-In particular, continuous protected attributes (such as age) should be converted into discrete categories. Using raw continuous values would create a large number of tiny groups (e.g. age = 47 vs age = 48), making group-level fairness comparisons unreliable and difficult to interpret
-
-For example, to discretise age:
-
-```python
-from preprocess import add_age_group
-df = add_age_group(df)
-```
-
-This creates a categorical variable (young, old) suitable for intersectional grouping.
-
-In summary, this preprocessing step takes as input a pandas DataFrame containing a continuous age column (eg. `age`), and bins the age values into a smaller number of categories. It outputs a new dataframe that retains all original columns, and adds a new categorical colunm (eg. `age_group`)
+New datasets and metrics can be added without refactoring core code.
 
 
-#### 2. Model-oriented preprocessing
+### 11. Packaging and Distribution
 
-Here the data is prepared for machine learning.
+The project is configured using pyproject.toml and is installable via:
 
-```python
-from preprocess import preprocess_tabular
-df_model = preprocess_tabular(df)
-```
+pip install -e .
 
-The output of this step, `df_model`, is a pandas DataFrame containing only numeric features. Categorical variables are converted into binary indicator columns using one-hot encoding, while numeric features are left unchanged.
+The group agreed to:
 
-This DataFrame is compatible with scikit-learn, which expects a 2-dimensional array-like input of shape (n_samples, n_features).
-
-#### 3. Data partitioning (train / test split)
-
-The pre-processed dataset is split into seperate training and test sets. This ensures that the model is trained on one subset of the data and evaluated on a different, unseen subset.
-
-```python
-from preprocess import make_train_test_split
-
-split = make_train_test_split(
-    df_model,
-    target_col="HeartDisease",
-    drop_cols=("age_group",),
-    test_size=0.3,
-    random_state=42
-)
-```
-The column specified by target_col (e.g. `HeartDisease`) is extracted as the outcome variable `y`.
-
-Protected attributes derived and used only for fairness analysis (sych as age_group) are dropeed from model inputs, ensuring that the model does not directly use these derived attributes while making predictions.
-
-A proportion of the data (e.g. 30%) is held as a test set, and the split is reproducible due to the fixed random_state.
-
-The function returns a container with four aligned components:
-- `X_train`, the feature matrix used to train a model
-- `X_test`, the feature matrix used to generate predictions
-- `y_train`, True outcome labels corresponding to X_train
-- `y_test`, True outcome labels corresponding to X_test 
-
-Row indices are preserved across all outputs.
-
-### Creating intersectional groups
-
-Fairness analysis often requires examining how a model behaves not only across individual protected attributes (such as sex or age), but across their intersections. For example, a model may behave differently for older women than for younger men, even if average performance by sex alone appears acceptable.
-
-Intersectional groups are constructed by combining multiple protected attributes into a single group label for each individual.
-
-```python
-from groups import create_intersectional_groups
-
-groups, group_map, counts = create_intersectional_groups(
-    df.loc[split.X_test.index],
-    protected=["Sex", "age_group"]
-)
-```
-
-The DataFrame is indexed using split.X_test.index to ensure that only individuals in the test set are considered, and that the group labels are aligned with the model’s predictions.
-
-For each test-set individual, a label is constructed by combining the specified protected attributes.
-
-eg. `Sex=1|age_group=older`
-
-The function also counts how many individuals belong to each intersectional group, which is important for interpreting fairness metrics and identifying small groups.
-
-The outputs of this function are:
-
-`groups`, a list of intersectional group labels, with one label per individual in the test set.
-The order of this list matches the order of the test-set rows used to generate model predictions.
-
-This means that for each test-set individual i:
-
-```
-groups[i], the protected group of individual i
-y_pred[i], the model’s prediction for individual i
-y_test[i], the true outcome for individual i
-```
-
-`group_map`, a mapping from each group label to the underlying protected attribute values.
-
-`counts`, a summary of how many individuals in the test set belong to each intersectional group.
-
-
-### Creating group_dict
-
-Alternatively, in case the fairness function expects `group_dict: dict[str, list]` where each key is a protected attribute and each value is a list of that attribute’s value for every sample, e.g.
-
-```
-{
-  "Sex":      [1, 0, 1, ...],
-  "age_group": ["older", "young", "older", ...]
-}
-```
-
-Then `group_dict` is created from a subset of the original DataFrame that contains only the rows used for testing and only the protected attributes we care about such as sex, age group.
+- Publish initially to TestPyPI
+- Progress to PyPI once stable

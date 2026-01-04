@@ -631,6 +631,9 @@ def max_intersect_fnr_diff(subject_labels_dict, predictions, true_statuses):
         across all intersectional groups. Returns np.nan if any group has no
         observations.
     """
+    fnrs = all_intersect_fnrs(subject_labels_dict=subject_labels_dict,
+                              predictions=predictions,
+                              true_statuses=true_statuses)
     fnr_values = np.array(list(fnrs.values()))
 
     if any(np.isnan(fnr_values)):
@@ -1012,7 +1015,7 @@ def max_intersect_fpr_ratio(subject_labels_dict, predictions, true_statuses,
         all intersectional groups. Returns np.nan if any group has no
         observations or if any false positive rate is 0.
     """
-    fprs = all_intersect_fnrs(subject_labels_dict=subject_labels_dict,
+    fprs = all_intersect_fprs(subject_labels_dict=subject_labels_dict,
                               predictions=predictions,
                               true_statuses=true_statuses)
     fpr_values = np.array(list(fprs.values()))
@@ -1354,7 +1357,7 @@ def max_intersect_for_ratio(subject_labels_dict, predictions, true_statuses,
         all intersectional groups. Returns np.nan if any group has no
         observations or if any false omission rate is 0.
     """
-    fors = all_intersect_fnrs(subject_labels_dict=subject_labels_dict,
+    fors = all_intersect_fors(subject_labels_dict=subject_labels_dict,
                               predictions=predictions,
                               true_statuses=true_statuses)
     for_values = np.array(list(fors.values()))
@@ -1697,7 +1700,7 @@ def max_intersect_fdr_ratio(subject_labels_dict, predictions, true_statuses,
         all intersectional groups. Returns np.nan if any group has no
         observations or if any false discovery rate is 0.
     """
-    fdrs = all_intersect_fnrs(subject_labels_dict=subject_labels_dict,
+    fdrs = all_intersect_fdrs(subject_labels_dict=subject_labels_dict,
                               predictions=predictions,
                               true_statuses=true_statuses)
     fdr_values = np.array(list(fdrs.values()))

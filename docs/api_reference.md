@@ -12,6 +12,9 @@
 ## fairness.metrics
 ::: fairness.metrics
 
+## fairness.single_metrics
+::: fairness.single_metrics
+
 ## fairness.adapters
 ::: fairness.adapters
 

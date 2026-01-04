@@ -33,6 +33,15 @@ import pandas as pd
 PathLike = Union[str, Path]
 
 
+from pathlib import Path
+from typing import Optional, Sequence, Union
+import urllib.parse
+
+import pandas as pd
+
+PathLike = Union[str, Path]
+
+
 def load_csv(
     path: PathLike,
     *,
@@ -42,15 +51,18 @@ def load_csv(
     """
     Load a CSV file into a pandas DataFrame.
 
+    The CSV may be provided either as a local file path or as a URL
+    (e.g. an HTTP(S) link to a raw CSV file).
+
     Parameters
     ----------
     path:
-        Path to the CSV file.
+        Path or URL to the CSV file.
     index_col:
         Column to use as the row index (passed to pandas.read_csv). If None,
         pandas uses a default integer index.
     na_values:
-        Additional strings to recognise as NA/NaN
+        Additional strings to recognise as NA/NaN.
 
     Returns
     -------
@@ -60,19 +72,29 @@ def load_csv(
     Raises
     ------
     FileNotFoundError
-        If the file does not exist.
+        If a local file path does not exist.
     ValueError
-        If the loaded object is empty.
+        If the loaded CSV is empty.
     """
-    path = Path(path)
-    if not path.exists():
-        raise FileNotFoundError(f"CSV not found: {path}")
+    path_str = str(path)
 
-    df = pd.read_csv(path, index_col=index_col, na_values=na_values)
+    # Case 1: URL
+    if urllib.parse.urlparse(path_str).scheme in {"http", "https"}:
+        df = pd.read_csv(path_str, index_col=index_col, na_values=na_values)
+
+    # Case 2: Local file path
+    else:
+        path_obj = Path(path_str)
+        if not path_obj.exists():
+            raise FileNotFoundError(f"CSV not found: {path_obj}")
+
+        df = pd.read_csv(path_obj, index_col=index_col, na_values=na_values)
+
     if df.empty:
-        raise ValueError(f"Loaded CSV is empty: {path}")
+        raise ValueError(f"Loaded CSV is empty: {path_str}")
 
     return df
+
 
 
 def validate_columns(df: pd.DataFrame, required: Iterable[str]) -> None:

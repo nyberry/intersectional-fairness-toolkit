@@ -12,3 +12,5 @@
 - [Meeting 5 minutes](meeting_5_minutes.md)
 - [Meeting 6 agenda](meeting_6_agenda.md)
 - [Meeting 6 minutes](meeting_6_minutes.md)
+- [Action plan and timeline](action_plan.pdf)
+- [Statement of use of GenAI](gen_ai.md)

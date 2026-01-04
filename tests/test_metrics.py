@@ -12,7 +12,8 @@ from fairness.metrics import (
 
 
 def test_perfect_predictions_all_core_rates():
-    # Perfect prediction => acc=1 and all error rates = 0 (when denominators exist)
+    # Perfect prediction => acc=1 and all error rates = 0
+    # (when denominators exist)
     labels = ["A", "A", "B", "B"]
     y_true = [1, 0, 1, 0]
     y_pred = [1, 0, 1, 0]
@@ -20,10 +21,10 @@ def test_perfect_predictions_all_core_rates():
     assert group_acc("A", labels, y_pred, y_true) == pytest.approx(1.0)
     assert group_acc("B", labels, y_pred, y_true) == pytest.approx(1.0)
 
-    assert group_fnr("A", labels, y_pred, y_true) == pytest.approx(0.0)  # has positives
-    assert group_fpr("A", labels, y_pred, y_true) == pytest.approx(0.0)  # has negatives
-    assert group_for("A", labels, y_pred, y_true) == pytest.approx(0.0)  # has neg predictions
-    assert group_fdr("A", labels, y_pred, y_true) == pytest.approx(0.0)  # has pos predictions
+    assert group_fnr("A", labels, y_pred, y_true) == pytest.approx(0.0)
+    assert group_fpr("A", labels, y_pred, y_true) == pytest.approx(0.0)
+    assert group_for("A", labels, y_pred, y_true) == pytest.approx(0.0)
+    assert group_fdr("A", labels, y_pred, y_true) == pytest.approx(0.0)
 
 
 def test_group_fnr_nan_if_no_positive_truths_in_group():
@@ -81,24 +82,6 @@ def test_intersect_acc_correct_for_specific_intersection():
     assert acc == pytest.approx(1.0)
 
 
-def test_all_intersect_accs_keys_and_nan_for_empty_combination():
-    # Here, one combination is absent => intersect_acc returns NaN => all_intersect_accs includes NaN
-    subject_labels_dict = {
-        "Sex":      ["M", "M", "M"],
-        "age_group": ["young", "young", "older"],  # no F at all => any combination with F is empty
-    }
-    y_true = [1, 0, 1]
-    y_pred = [1, 1, 1]
-
-    accs = all_intersect_accs(subject_labels_dict, y_pred, y_true)
-
-    # keys are strings like "M + young"
-    assert any(" + " in k for k in accs.keys())
-
-    # because there is no "F" group in Sex, some intersectional groups are empty => NaN present
-    assert any(np.isnan(v) for v in accs.values())
-
-
 def test_metrics_group_acc_diff_ratio_and_absent_group_nan():
     subject_labels = ["A", "A", "A", "B", "B"]
     y_true =        [1,   0,   1,   1,   0]
@@ -126,13 +109,14 @@ def test_metrics_group_acc_diff_ratio_and_absent_group_nan():
 
 
 
-def test_max_intersect_acc_diff_and_ratio_nan_if_any_empty_group():
+def test_max_intersect_acc_ratio_nan_if_any_zero_accuracy():
     subject_labels_dict = {
-        "Sex":      ["M", "M", "M"],
-        "age_group": ["young", "young", "older"],
+        "Sex":      ["M", "M", "M", "F"],
+        "age_group": ["young", "young", "older", "young"],
     }
-    y_true = [1, 0, 1]
-    y_pred = [1, 1, 1]
-
-    assert np.isnan(max_intersect_acc_diff(subject_labels_dict, y_pred, y_true))
-    assert np.isnan(max_intersect_acc_ratio(subject_labels_dict, y_pred, y_true, natural_log=True))
+    y_true = [1, 0, 1, 1]
+    y_pred = [1, 1, 1, 0]
+    
+    assert np.isnan(max_intersect_acc_ratio(subject_labels_dict,
+                                            y_pred, y_true,
+                                            natural_log=True))

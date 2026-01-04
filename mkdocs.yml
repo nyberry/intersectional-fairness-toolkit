@@ -2,6 +2,11 @@ site_name: Intersectional Fairness Toolkit
 theme:
   name: material
 
+markdown_extensions:
+  - toc:
+      permalink: true
+
+
 plugins:
   - mkdocstrings:
       handlers:
@@ -9,6 +14,7 @@ plugins:
           options:
             docstring_style: numpy
             show_source: false
+            show_signature: false
 
 nav:
   - Home: index.md
@@ -27,3 +33,7 @@ nav:
       - Meeting 4 minutes: team_portfolio/meeting_4_minutes.md
       - Meeting 5 agenda: team_portfolio/meeting_5_agenda.md
       - Meeting 5 minutes: team_portfolio/meeting_5_minutes.md
+      - Meeting 6 agenda: team_portfolio/meeting_6_agenda.md
+      - Meeting 6 minutes: team_portfolio/meeting_6_minutes.md
+      - Action plan and timeline: team_portfolio/action_plan.pdf
+      - GenAI use: team_portfolio/gen_ai.md

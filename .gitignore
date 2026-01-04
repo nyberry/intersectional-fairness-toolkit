@@ -5,15 +5,13 @@ __pycache__/
 *.pyo
 *.pyc
 
-# Virtual environments
-venv/
-env/
-.venv/
-
 # Distribution / packaging
 build/
 dist/
 *.egg-info/
+
+# Pytest
+.pytest_cache/
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
@@ -24,11 +22,18 @@ dist/
 # macOS system files
 .DS_Store
 
-# local files
+# local files / secrets / scratch
 old_files/
 local_files/
 local_git_files/
 
-
 # MkDocs build output
 site/
+
+# Local environments
+fairness-env-test/
+.env/
+.venv/
+venv/
+*_env/
+*-env/
