@@ -1700,7 +1700,7 @@ def max_intersect_fdr_ratio(subject_labels_dict, predictions, true_statuses,
         all intersectional groups. Returns np.nan if any group has no
         observations or if any false discovery rate is 0.
     """
-    fdrs = all_intersect_fnrs(subject_labels_dict=subject_labels_dict,
+    fdrs = all_intersect_fdrs(subject_labels_dict=subject_labels_dict,
                               predictions=predictions,
                               true_statuses=true_statuses)
     fdr_values = np.array(list(fdrs.values()))
