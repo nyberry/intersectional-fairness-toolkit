@@ -10,5 +10,5 @@ dependencies:
   - python=3.12
   - scikit-learn=1.7.1
   - pip:
-      - intersectional-fairness-toolkit==0.2.1
+      - intersectional-fairness-toolkit==0.2.3
       
