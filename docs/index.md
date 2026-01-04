@@ -35,7 +35,7 @@ In this package, intersectional groups are evaluated using differential fairness
 
 ## Installation
 
-Install from TestPyPI (recommended):
+Install from PyPI (recommended):
 
 ```bash
 pip install intersectional-fairness-toolkit==0.2.1
@@ -161,11 +161,11 @@ The following documentation is provided:
 | [`max_intersect_fdr_diff`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.metrics.max_intersect_fdr_diff)       | Calculate the maximum difference in false discovery rate across intersectional groups |
 | [`max_intersect_fdr_ratio`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.metrics.max_intersect_fdr_ratio)     | Calculate the maximum ratio of false discovery rates across intersectional groups     |
 | [`group_to_binary`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.single_metrics.group_to_binary)                     | Wrap single-group fairness functions so they work with intersectional groups          |
-| [`calculate_TP_FN_FP_TN`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.single_metrics.calculate_tp_fn_fp_tn)         | Compute confusion-matrix counts (TP, FN, FP, TN)                                      |
-| [`calculate_TPR_TNR_FPR_FNR`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.single_metrics.calculate_tpr_tnr_fpr_fnr) | Compute rate metrics (TPR, TNR, FPR, FNR) from confusion-matrix counts                |
-| [`calculate_EOD`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.single_metrics.calculate_eod)                         | Equal Opportunity Difference between demographic groups                               |
-| [`calculate_AOD`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.single_metrics.calculate_aod)                         | Average Odds Difference between demographic groups                                    |
-| [`calculate_DI`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.single_metrics.calculate_di)                           | Disparate Impact between demographic groups                                           |
+| [`calculate_TP_FN_FP_TN`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.single_metrics.calculate_TP_FN_FP_TN)         | Compute confusion-matrix counts (TP, FN, FP, TN)                                      |
+| [`calculate_TPR_TNR_FPR_FNR`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.single_metrics.calculate_TPR_TNR_FPR_FNR) | Compute rate metrics (TPR, TNR, FPR, FNR) from confusion-matrix counts                |
+| [`calculate_EOD`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.single_metrics.calculate_EOD)                         | Equal Opportunity Difference between demographic groups                               |
+| [`calculate_AOD`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.single_metrics.calculate_AOD)                         | Average Odds Difference between demographic groups                                    |
+| [`calculate_DI`](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/#fairness.single_metrics.calculate_DI)                           | Disparate Impact between demographic groups                                           |
 
 
 ## Project context
