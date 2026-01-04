@@ -70,19 +70,16 @@ These notebooks demonstrate:
 
 ## 5. View the documentation
 
-Documentation source files are located in the docs/ directory.
+All documentation fot this package is available at [https://raiet-bekirov.github.io/HPDM139_assignment/](https://raiet-bekirov.github.io/HPDM139_assignment/)
 
-To build the documentation locally:
+Documentation source files are located in the docs/ directory. To build and view the documentation locally:
 
 ```bash
 mkdocs build
-```
-
-To view the documentation locally, serve then open the displayed local URL in a web browser:
-
-```bash
 mkdocs serve
 ```
+
+Then open the displayed local URL in a web browser:
 
 ---
 
