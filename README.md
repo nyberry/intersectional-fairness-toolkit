@@ -20,10 +20,12 @@ Bias can arise when model predictions differ across protected attributes such as
 This package provides tools which allow researchers to evaluate fairness across intersections of protected attributes ([Foulds, 2019](https://arxiv.org/abs/1807.08362)), rather than considering each attribute independently.
 
 For example, instead of checking:
+
 - men vs women
 - younger vs older patients
 
 We check:
+
 - young women
 - older women
 - young men
