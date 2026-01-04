@@ -116,8 +116,8 @@ A complete end-to-end example using the UCI Heart Disease dataset is provided at
 - [Tutorial](https://raiet-bekirov.github.io/HPDM139_assignment/tutorial/) 
 - [API reference](https://raiet-bekirov.github.io/HPDM139_assignment/api_reference/)
 - [Design decisions](https://raiet-bekirov.github.io/HPDM139_assignment/design_decisions/)
-- [Data loading and preprocessing demo](https://github.com/Raiet-Bekirov/HPDM139_assignment/blob/main/examples/data_demo.ipnyb)
-- [Metrics demo](https://github.com/Raiet-Bekirov/HPDM139_assignment/blob/main/examples/single_metrics_demo.ipnyb)
+- [Data loading and preprocessing demo](https://github.com/Raiet-Bekirov/HPDM139_assignment/blob/main/examples/data_demo.ipynb)
+- [Metrics demo](https://github.com/Raiet-Bekirov/HPDM139_assignment/blob/main/examples/single_metrics_demo.ipynb)
 
 ## Project context
 
