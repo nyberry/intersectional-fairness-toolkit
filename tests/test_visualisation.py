@@ -1,12 +1,12 @@
 import matplotlib
 
-matplotlib.use("Agg")
-
 import matplotlib.figure
 import pandas as pd
 
 from fairness import metrics
 from fairness import visualisation as vis
+
+matplotlib.use("Agg")
 
 
 def _demo_inputs():
@@ -24,7 +24,8 @@ def _demo_inputs():
     true_statuses = [1, 0, 0, 1, 1, 0, 0, 1]
     subject_labels_dict = {
         "Sex": ["M", "M", "F", "F", "M", "M", "F", "F"],
-        "age_group": ["young", "young", "young", "young", "older", "older", "older", "older"],
+        "age_group": ["young", "young", "young", "young",
+                      "older", "older", "older", "older"],
     }
     return subject_labels, predictions, true_statuses, subject_labels_dict
 
@@ -54,7 +55,8 @@ def test_plot_group_metric_from_eval_df():
             "y_true": true_statuses,
         }
     )
-    fig = vis.plot_group_metric_from_eval_df(metrics.group_fnr, eval_df, sort=True)
+    fig = vis.plot_group_metric_from_eval_df(metrics.group_fnr, eval_df,
+                                             sort=True)
     _assert_figure(fig)
 
 
@@ -70,7 +72,8 @@ def test_plot_pairwise_group_metric():
 
 
 def test_plot_intersectional_metric():
-    subject_labels, predictions, true_statuses, subject_labels_dict = _demo_inputs()
+    subject_labels, predictions, \
+        true_statuses, subject_labels_dict = _demo_inputs()
     fig = vis.plot_intersectional_metric(
         metrics.all_intersect_accs,
         subject_labels_dict,
@@ -81,7 +84,8 @@ def test_plot_intersectional_metric():
 
 
 def test_plot_scalar_metrics():
-    subject_labels, predictions, true_statuses, subject_labels_dict = _demo_inputs()
+    subject_labels, predictions, \
+        true_statuses, subject_labels_dict = _demo_inputs()
     values = {
         "max_intersect_acc_diff": metrics.max_intersect_acc_diff(
             subject_labels_dict, predictions, true_statuses

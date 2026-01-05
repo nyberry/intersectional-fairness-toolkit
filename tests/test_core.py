@@ -5,8 +5,9 @@ import pandas as pd
 import pytest
 
 from fairness.data import load_csv, load_features_and_target
-from fairness.preprocess import add_age_group, map_binary_column, preprocess_tabular
-from fairness.groups import make_intersectional_labels, make_eval_df
+from fairness.preprocess import add_age_group, map_binary_column, \
+                                preprocess_tabular
+from fairness.groups import make_intersectional_labels
 from fairness.metrics import group_acc, group_acc_diff, group_acc_ratio
 
 
@@ -22,7 +23,7 @@ def test_load_csv_missing_file_raises(tmp_path):
 
 def test_load_csv_empty_csv_raises(tmp_path):
     p = tmp_path / "empty.csv"
-    p.write_text("") 
+    p.write_text("")
     p.write_text("a,b\n")
     with pytest.raises(ValueError, match="Loaded CSV is empty"):
         load_csv(p)
@@ -37,7 +38,8 @@ def test_load_features_and_target_splits_and_drops_cols():
             "HeartDisease": [0, 1],
         }
     )
-    X, y = load_features_and_target(df, target_col="HeartDisease", drop_cols=("age_group",))
+    X, y = load_features_and_target(df, target_col="HeartDisease",
+                                    drop_cols=("age_group",))
     assert list(y) == [0, 1]
     assert "HeartDisease" not in X.columns
     assert "age_group" not in X.columns
@@ -81,7 +83,8 @@ def test_preprocess_tabular_one_hot_and_drop_cols():
             "age_group": ["young", "older"],
         }
     )
-    out = preprocess_tabular(df, drop_cols=("age_group",), one_hot=True, drop_first=True)
+    out = preprocess_tabular(df, drop_cols=("age_group",), one_hot=True,
+                             drop_first=True)
 
     # age_group should be gone
     assert "age_group" not in out.columns
@@ -89,7 +92,8 @@ def test_preprocess_tabular_one_hot_and_drop_cols():
     # Age numeric should remain
     assert "Age" in out.columns
 
-    # Sex should be one-hot encoded with drop_first=True => only one dummy column
+    # Sex should be one-hot encoded with drop_first=True => only one
+    # dummy column
     sex_cols = [c for c in out.columns if c.startswith("Sex_")]
     assert len(sex_cols) == 1
 
@@ -101,7 +105,8 @@ def test_preprocess_tabular_one_hot_and_drop_cols():
 def test_make_intersectional_labels_format_and_missing_to_NA():
     df = pd.DataFrame({"Sex": [1, np.nan], "age_group": ["older", "young"]})
     labels = make_intersectional_labels(df, protected=("Sex", "age_group"))
-    assert labels[0] == "Sex=1.0|age_group=older" or labels[0] == "Sex=1|age_group=older"
+    assert labels[0] == "Sex=1.0|age_group=older" \
+        or labels[0] == "Sex=1|age_group=older"
     assert "Sex=NA" in labels[1]
     assert labels[1].endswith("age_group=young")
 
@@ -112,8 +117,8 @@ def test_make_intersectional_labels_format_and_missing_to_NA():
 
 def test_metrics_group_acc_diff_ratio_and_absent_group_nan():
     subject_labels = ["A", "A", "A", "B", "B"]
-    y_true =        [1,   0,   1,   1,   0]
-    y_pred =        [1,   1,   0,   1,   0]
+    y_true = [1,   0,   1,   1,   0]
+    y_pred = [1,   1,   0,   1,   0]
 
     # Group A accuracy: correct at idx0 only => 1/3
     acc_a = group_acc("A", subject_labels, y_pred, y_true)
@@ -127,7 +132,8 @@ def test_metrics_group_acc_diff_ratio_and_absent_group_nan():
     assert diff == pytest.approx(abs((1/3) - 1.0))
 
     # ratio returns log(max(acc_a/acc_b, acc_b/acc_a)) by default
-    ratio_log = group_acc_ratio("A", "B", subject_labels, y_pred, y_true, natural_log=True)
+    ratio_log = group_acc_ratio("A", "B", subject_labels, y_pred, y_true,
+                                xnatural_log=True)
     expected = math.log(max((1/3)/1.0, 1.0/(1/3)))
     assert ratio_log == pytest.approx(expected)
 
