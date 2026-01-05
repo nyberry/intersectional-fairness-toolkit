@@ -20,3 +20,8 @@ dependencies:
   - mkdocs-material
   - mkdocstrings
   - mkdocstrings-python
+  
+  # Development
+  - black
+  - flake8
+  - nbqa
