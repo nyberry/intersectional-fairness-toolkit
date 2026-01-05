@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "intersectional-fairness-toolkit"
-version = "0.2.4"
+version = "0.2.5"
 description = "Utilities for intersectional fairness analysis of tabular health datasets."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache 2.0"}
 authors = [
-  {name = "HPDM139 Assignment Group"}
+  {name = "Raiet Bekirov, Nick Berry, Becky Griffiths, Kayla Yasmine"}
 ]
 dependencies = [
   "pandas>=2.0",
