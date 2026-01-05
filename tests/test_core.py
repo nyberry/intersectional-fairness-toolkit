@@ -133,7 +133,7 @@ def test_metrics_group_acc_diff_ratio_and_absent_group_nan():
 
     # ratio returns log(max(acc_a/acc_b, acc_b/acc_a)) by default
     ratio_log = group_acc_ratio("A", "B", subject_labels, y_pred, y_true,
-                                xnatural_log=True)
+                                natural_log=True)
     expected = math.log(max((1/3)/1.0, 1.0/(1/3)))
     assert ratio_log == pytest.approx(expected)
 
