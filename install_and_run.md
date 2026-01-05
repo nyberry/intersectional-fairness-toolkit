@@ -127,5 +127,5 @@ mkdocs build
 mkdocs serve
 ```
 
-Then open the displayed local URL in a web browser.
+Then open the displayed local URL in a web browser
 
