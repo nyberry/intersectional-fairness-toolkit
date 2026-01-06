@@ -190,6 +190,9 @@ https://doi.org/10.1145/3306618.3314287 (Accessed at https://arxiv.org/abs/1807.
 
 - Hardt, M., Price, E. and Srebro, N. (2016). Equality of Opportunity in Supervised Learning. arXiv:1610.02413 [cs]. [online] 
 Available at: https://arxiv.org/abs/1610.02413.
+
+- Janosi, A., Steinbrunn, W., Pfisterer, M. and Detrano, R. (1988). UCI Machine Learning Repository. [online] archive.ics.uci.edu.
+  Available at: https://archive.ics.uci.edu/dataset/45/heart+disease.
 ## License
 
 Apache-2.0 license
