@@ -188,6 +188,8 @@ https://raiet-bekirov.github.io/HPDM139_assignment/team_portfolio/contents/)
 An intersectional definition of fairness. Proceedings of the 2019 AAAI/ACM Conference on AI, Ethics, and Society, 191–198.
 https://doi.org/10.1145/3306618.3314287 (Accessed at https://arxiv.org/abs/1807.08362 )
 
+- Hardt, M., Price, E. and Srebro, N. (2016). Equality of Opportunity in Supervised Learning. arXiv:1610.02413 [cs]. [online] 
+Available at: https://arxiv.org/abs/1610.02413.
 ## License
 
 Apache-2.0 license
