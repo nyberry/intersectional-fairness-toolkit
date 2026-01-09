@@ -1,6 +1,11 @@
 # Intersectional Fairness Toolkit for Health Machine Learning
 
+Created by Raiet Bekirov, Nick Berry, Becky Griffiths, Kayla Yasmine
+---
+
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Raiet-Bekirov/HPDM139_assignment/HEAD?urlpath=%2Fdoc%2Ftree%2Fexamples%2Fuci_heart_demo.ipynb)
+
+![Welcome image](/examples/assets/images/title_image.jpeg)
 
 This project provides a Python package for evaluating intersectional fairness in machine learning models applied to tabular health datasets. It supports the construction of intersectional protected groups (e.g. sex × age group) and the computation of fairness metrics such as Differential Fairness.
 
